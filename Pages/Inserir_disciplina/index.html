@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniNew - Inserir Disciplina</title>
+    <link rel="stylesheet" href="/Assets/Styles/global.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div class="container">
+        <header class="app-header">
+            <h1 class="logo-text">UniNew</h1>
+            <div class="logo-image">
+                <img src="/Assets/Images/Logo.png" alt="Logo UniNew">
+            </div>
+        </header>
+
+        <main class="form-container">
+            <form id="disciplinaForm">
+                <div class="input-group">
+                    <label for="disciplina">Disciplina</label>
+                    <input type="text" id="disciplina" name="disciplina">
+                </div>
+                <div class="input-group">
+                    <label for="carga">Carga Horaria</label>
+                    <input type="number" id="carga" name="carga">
+                </div>
+                
+                <button type="submit" class="btn btn-green">SALVAR</button>
+            </form>
+            
+            <p id="message" class="message"></p>
+        </main>
+    </div>
+
+    <footer class="footer-wave">
+        <h2>INSERIR DISCIPLINA</h2>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

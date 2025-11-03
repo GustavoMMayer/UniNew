@@ -1,0 +1,31 @@
+
+
+body {
+    
+    background-color: var(--color-primary-dark);
+    
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+
+.logo-text {
+    color: var(--color-text-light);
+}
+
+
+.link-secondary {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--color-text-link);
+    text-decoration: none;
+}
+
+.link-secondary:hover {
+    text-decoration: underline;
+}
+
+

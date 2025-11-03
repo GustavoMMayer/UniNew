@@ -1,0 +1,75 @@
+
+.app-header-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 15px 0;
+    margin-bottom: 10px;
+}
+
+
+.logout-link {
+    color: var(--color-text-dark);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+}
+.logout-link i {
+    margin-right: 5px;
+}
+
+
+.logo-image-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.logo-image-menu {
+    width: 100px;
+}
+
+
+.menu-grid {
+    display: grid;
+   
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px; 
+    width: 100%;
+}
+
+
+.menu-btn {
+    background-color: #8A9BFF; 
+    border: none;
+    border-radius: 15px;
+    padding: 20px 10px;
+    
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    color: var(--color-text-dark);
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    
+    min-height: 100px; 
+    transition: background-color 0.2s;
+}
+
+.menu-btn:hover {
+    background-color: #7a8aed;
+}
+
+.menu-btn i {
+    color: var(--color-text-dark);
+    margin-bottom: 10px; 
+}
+
+
+.btn-pesquisa {
+    grid-column: 2 / 3;
+}

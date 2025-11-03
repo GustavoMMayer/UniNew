@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Notas — UniNew</title>
+
+  <!-- seu CSS global -->
+  <link rel="stylesheet" href="/Assets/Styles/global.css">
+
+  <!-- CSS específico desta página -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container page-notes">
+    <header class="app-header" aria-label="Cabeçalho">
+      <!-- Logo textual (grande) + imagem já presente no projeto -->
+      <div class="logo-text">UniNew</div>
+
+      <div class="logo" aria-hidden="true">
+        <!-- a imagem do logo (png) que você já tem no projeto -->
+        <div class="logo-image">
+          <img src="/Assets/Images/Logo.png" alt="UniNew logo">
+        </div>
+
+        <!-- círculo com livro (overlay) -->
+        <img class="book-circle" src="images/book-circle.png" alt="" aria-hidden="true">
+      </div>
+    </header>
+
+    <main>
+      <!-- cartão branco com disciplinas -->
+      <section class="notes-card">
+        <div class="notes-header">
+          <span>Disciplinas</span>
+          <span class="note-title">Nota</span>
+        </div>
+
+        <ul id="disciplinesList" class="disc-list" aria-live="polite">
+          <!-- itens renderizados via JS -->
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <!-- footer-wave (usa sua classe global, permanece no fluxo) -->
+   <footer class="footer-wave">
+        <h2>NOTAS</h2>
+    </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

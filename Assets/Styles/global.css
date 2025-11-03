@@ -1,0 +1,201 @@
+
+
+/* 1. Variáveis de Cor (baseado nos protótipos) */
+:root {
+    --color-primary-dark: #6366FF;   /* Roxo escuro (Login) */
+    --color-primary-medium: #576DD3; /* Azul/Roxo da "onda" */
+    --color-primary-light: #BACAFF;  /* Lilás claro (Fundo dos forms) */
+    
+    --color-button-green: #288c46;
+    --color-button-green-dark: #45a049;
+    --color-button-red: #D84043;
+    --color-button-red-dark: #c9302c;
+    --color-button-yellow: #D7DD25;
+    --color-button-yellow-dark: #b2bc2e;
+    --color-button-dark: #28272b; /* Botão "Entrar" */
+    
+    --color-text-light: #FFFFFF;
+    --color-text-dark: #333;
+    --color-text-link: #f0f0f0;
+
+    --color-circle-dark:#656CE3; /*Circulo livro*/
+    --color-circle-light:#8699f6; /*Circulo livro*/
+}
+
+/* 2. Reset Básico e Fontes */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    font-family: Arial, sans-serif; /* Fonte simples como pedido */
+    
+    /* Fundo padrão (para as telas de formulário) */
+    background-color: var(--color-primary-light);
+    color: var(--color-text-dark);
+    
+    /* Garante que o footer-wave fique no fim */
+    position: relative;
+    min-height: 100vh;
+}
+
+/* 3. Container Principal */
+.container {
+    width: 100%;
+    max-width: 450px; /* Limita a largura em desktops */
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 150px; /* Espaço para o footer-wave não cobrir o form */
+}
+
+/* 4. Cabeçalho (Logo) - Comum a todas as telas */
+.app-header {
+    margin-bottom: 30px;
+    padding-top: 15px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo-text {
+    font-size: 3.5rem; /* 56px */
+    color: var(--color-primary-medium); /* Cor padrão do logo */
+    font-weight: bold;
+    margin-bottom: -15px;
+    z-index: 10;
+    /* Use uma fonte mais parecida se quiser, mas Arial é simples */
+    /* font-family: 'Righteous', sans-serif; */ 
+}
+
+.logo-image img {
+    width: 100%;
+    height: 100%;
+}
+.logo {
+  width: 285.77px;
+  height: 118px;
+  /*background-color: #BACAFF;*/
+  position: relative;     /* referência para posicionamento absoluto */
+  overflow: hidden;       /* evita que elementos vazem */
+  box-sizing: border-box;
+  border: 1px dashed rgba(0,0,0,0.05); /* só para debug visual (opcional) */
+}
+
+
+/* 5. Estilos de Formulário (Comum a 9 telas) */
+.form-container {
+    width: 100%;
+}
+
+.input-group {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--color-text-dark);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"],
+input[type="number"] {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    background-color: var(--color-text-light);
+    color: var(--color-text-dark);
+}
+
+/* 6. Estilos de Botão (Comum a 9 telas) */
+.btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--color-text-light);
+    cursor: pointer;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+
+.btn-dark {
+    background-color: var(--color-button-dark);
+}
+.btn-dark:hover {
+    background-color: #555;
+}
+
+.btn-green {
+    background-color: var(--color-button-green);
+}
+.btn-green:hover {
+    background-color: var(--color-button-green-dark);
+}
+
+.btn-red {
+    background-color: var(--color-button-red);
+}
+.btn-red:hover {
+    background-color: var(--color-button-red-dark);
+}
+
+.btn-yellow {
+    background-color: var(--color-button-yellow);
+    color: var(--color-text-dark);
+}
+.btn-yellow:hover {
+    background-color: var(--color-button-yellow-dark);
+}
+
+/* 7. Rodapé "Onda" (Comum a 8 telas) */
+.footer-wave {
+    background-color: var(--color-primary-medium);
+    color: var(--color-text-light);
+    padding: 40px 30px 60px 30px;
+    text-align: left;
+    /* O efeito de onda simples */
+    border-radius: 60% 60% 0 0 / 100px 100px 0 0;
+    
+    
+    position: static; /* ou remova a propriedade position inteiramente */
+    width: 100%;
+    margin-top: 32px; /* espaço entre conteúdo e a onda */
+}
+
+.footer-wave h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    
+}
+.message {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #D9534F; 
+    text-align: center;
+}
+
+.message.success {
+    color: #4CAF50; 
+}
+.message.error {
+  color: #e74c3c;
+}
