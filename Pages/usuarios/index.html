@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Listagem de LocalStorage (mock_db_v1 / usuario_logado / outros)</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;--success:#10b981}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#031029 0%, #071428 100%);color:#e6eef6}
+    .wrap{max-width:1100px;margin:28px auto;padding:18px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+    h1{margin:0;font-size:20px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    input[type=search], select, button { padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit }
+    button{background:var(--accent);border:none;color:#032;font-weight:600;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+    thead th{font-size:12px;text-align:left;padding:10px;border-bottom:1px dashed rgba(255,255,255,0.04);color:var(--muted)}
+    tbody td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.02);vertical-align:top}
+    .small{font-size:13px;color:var(--muted)}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px}
+    .actions button{margin-right:6px;padding:6px 8px;border-radius:8px}
+    pre{white-space:pre-wrap;background:rgba(0,0,0,0.12);padding:10px;border-radius:8px;overflow:auto}
+    .grid {display:grid;grid-template-columns:1fr 340px;gap:12px}
+    .panel {padding:12px;border-radius:10px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
+    .meta {font-size:13px;color:var(--muted);margin-top:8px}
+    @media (max-width:920px){ .grid{grid-template-columns:1fr} .controls{flex-direction:column} table thead{display:none} tbody td{display:block;padding:8px} tbody td::before{content:attr(data-label) ": ";font-weight:700;display:inline-block;width:110px;color:var(--muted)} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Visualizador LocalStorage</h1>
+      <div class="small">Inspeciona todo o conteúdo gravado no <code>localStorage</code> — incluindo <code>mock_db_v1</code>, <code>usuario_logado</code> e outras chaves.</div>
+    </header>
+
+    <div class="card">
+      <div class="controls">
+        <label class="small" for="collectionSelect">Coleção:</label>
+        <select id="collectionSelect"><option value="__all">— Todas —</option></select>
+
+        <input id="search" type="search" placeholder="Pesquisar texto livre na coleção..." />
+
+        <label class="small" for="filterKey">Filtrar por campo:</label>
+        <select id="filterKey"><option value="">(nenhum)</option></select>
+
+        <button id="refresh">⟳ Atualizar</button>
+        <button id="exportCsv" class="ghost">Exportar CSV</button>
+        <button id="resetMock" class="ghost">Reset mock_db_v1</button>
+
+        <div style="margin-left:auto" class="small">Registros: <span id="count">0</span></div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <div id="tableWrap" class="panel">
+            <table id="dataTable">
+              <thead><tr id="tableHead"></tr></thead>
+              <tbody></tbody>
+            </table>
+            <div class="meta">Coleção atual: <strong id="currentCollection">Todas</strong></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <button id="showRaw" class="ghost">Mostrar Dados Brutos</button>
+              <button id="clearSelection" class="ghost">Limpar seleção</button>
+            </div>
+            <div style="max-height:420px;overflow:auto">
+              <pre id="raw"></pre>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:12px">
+            <div class="small">Ações rápidas</div>
+            <div style="margin-top:8px">
+              <button id="deleteSelected" class="ghost">Excluir item selecionado</button>
+              <button id="exportSelected" class="ghost">Exportar item selecionado (JSON)</button>
+            </div>
+            <div class="meta" style="margin-top:12px">Chaves no localStorage: <span id="keysCount">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // utils
+  // helpers seguros
+function safeParse(v) {
+  try { return JSON.parse(v); } catch (e) { return null; }
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+// carrega todas as chaves do localStorage e detecta coleções
+function loadAllLocalStorage() {
+  const all = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    all[key] = safeParse(localStorage.getItem(key));
+  }
+  return all;
+}
+
+// extrai coleções do mock_db_v1 (se existir) e chaves que sejam arrays de objetos
+function discoverCollections(ls) {
+  const collections = new Map(); // name -> array
+
+  // 1) mock_db_v1 subcollections
+  if (ls['mock_db_v1'] && typeof ls['mock_db_v1'] === 'object') {
+    const m = ls['mock_db_v1'];
+    Object.keys(m).forEach(k => {
+      if (Array.isArray(m[k])) collections.set(k, m[k].slice());
+    });
+  }
+
+  // 2) chaves diretamente arrays (ex: 'usuarios','alunos','disciplinas' etc)
+  Object.keys(ls).forEach(k => {
+    if (Array.isArray(ls[k])) {
+      const arr = ls[k];
+      if (arr.length === 0 || typeof arr[0] === 'object') {
+        collections.set(k, arr.slice());
+      }
+    }
+  });
+
+  // 3) usuario_logado (objeto único) exposto como 'usuario_logado' coleção com 1 elemento
+  if (ls['usuario_logado']) {
+    const u = ls['usuario_logado'];
+    if (typeof u === 'object') collections.set('usuario_logado', [u]);
+  }
+
+  // 4) se não encontrou nada, cria fallback: todas as chaves (como objetos/strings)
+  if (collections.size === 0) {
+    Object.keys(ls).forEach(k => {
+      const val = ls[k];
+      collections.set(k, Array.isArray(val) ? val.slice() : [val]);
+    });
+  }
+
+  return collections;
+}
+
+
+  // GLOBAIS DE UI
+  const collectionSelect = document.getElementById('collectionSelect');
+  const filterKey = document.getElementById('filterKey');
+  const searchInput = document.getElementById('search');
+  const refreshBtn = document.getElementById('refresh');
+  const exportCsvBtn = document.getElementById('exportCsv');
+  const resetMockBtn = document.getElementById('resetMock');
+  const rawPre = document.getElementById('raw');
+  const dataTable = document.getElementById('dataTable');
+  const tableHead = document.getElementById('tableHead');
+  const tableBody = dataTable.querySelector('tbody');
+  const countEl = document.getElementById('count');
+  const currentCollectionEl = document.getElementById('currentCollection');
+  const keysCountEl = document.getElementById('keysCount');
+  const showRawBtn = document.getElementById('showRaw');
+  const deleteSelectedBtn = document.getElementById('deleteSelected');
+  const exportSelectedBtn = document.getElementById('exportSelected');
+  const clearSelectionBtn = document.getElementById('clearSelection');
+
+  let LS = {}; // snapshot
+  let COLLECTIONS = new Map(); // name -> array
+  let currentCollection = '__all'; // or collection name
+  let currentItems = []; // items currently shown
+  let selectedKeyForDelete = null; // string that uniquely identifies item in its collection (composed)
+  let uniqueKeyField = null; // field used as unique (cpf/cnpj/id/email) for current collection
+
+  // Carrega estado
+  function refreshState() {
+    LS = loadAllLocalStorage();
+    COLLECTIONS = discoverCollections(LS);
+    populateCollectionSelect();
+    populateKeysCount();
+    renderCurrent();
+  }
+
+  // povoar select de coleções
+  function populateCollectionSelect() {
+    // cleanup
+    collectionSelect.innerHTML = '<option value="__all">— Todas —</option>';
+    const names = Array.from(COLLECTIONS.keys()).sort();
+    names.forEach(n => {
+      const o = document.createElement('option'); o.value = n; o.textContent = n; collectionSelect.appendChild(o);
+    });
+  }
+
+  function populateKeysCount() {
+    keysCountEl.textContent = Object.keys(LS).length;
+  }
+
+  // deduz colunas para uma coleção (todas as chaves presentes em items)
+  function deduceColumns(items) {
+    const cols = new Set();
+    items.forEach(it => {
+      if (it && typeof it === 'object') {
+        Object.keys(it).forEach(k => cols.add(k));
+      } else {
+        cols.add('value');
+      }
+    });
+    return Array.from(cols);
+  }
+
+  // tentativa de achar campo único (cpf/cnpj/id/email)
+  function findUniqueField(cols) {
+    const prefs = ['cpf','cnpj','id','email','nome','name'];
+    for (const p of prefs) if (cols.includes(p)) return p;
+    return cols.length ? cols[0] : null;
+  }
+
+  // render tabela
+  function renderCurrent() {
+    let items = [];
+    if (currentCollection === '__all') {
+      // juntar todas as coleções num array com meta coleção
+      const merged = [];
+      for (const [name, arr] of COLLECTIONS.entries()) {
+        arr.forEach(obj => merged.push(Object.assign({ __collection: name }, (obj || {}))));
+      }
+      items = merged;
+    } else {
+      items = (COLLECTIONS.get(currentCollection) || []).slice();
+    }
+
+    // aplicar busca simples por texto e filtro por campo
+    const q = (searchInput.value || '').trim().toLowerCase();
+    const fk = (filterKey.value || '').trim();
+
+    const filtered = items.filter(it => {
+      if (!q) return true;
+      // stringify and test
+      try {
+        return JSON.stringify(it).toLowerCase().includes(q);
+      } catch(e) { return false; }
+    });
+
+    // se filterKey selecionado, reduzir colunas depois de filtrar (não filtra por valor)
+    const columns = deduceColumns(filtered);
+    uniqueKeyField = findUniqueField(columns);
+
+    // HEAD
+    tableHead.innerHTML = '';
+    const headerRow = document.createElement('tr');
+    // se todas, incluir coleção coluna
+    if (currentCollection === '__all') {
+      const thc = document.createElement('th'); thc.textContent = 'Coleção'; headerRow.appendChild(thc);
+    }
+    columns.forEach(c => {
+      const th = document.createElement('th'); th.textContent = c; headerRow.appendChild(th);
+    });
+    // ações
+    const thActions = document.createElement('th'); thActions.textContent = 'Ações'; headerRow.appendChild(thActions);
+    tableHead.appendChild(headerRow);
+
+    // BODY
+    tableBody.innerHTML = '';
+    filtered.forEach((it, idx) => {
+      const tr = document.createElement('tr');
+      if (currentCollection === '__all') {
+        const tdCol = document.createElement('td'); tdCol.textContent = it.__collection || ''; tr.appendChild(tdCol);
+      }
+      columns.forEach(col => {
+        const td = document.createElement('td');
+        td.setAttribute('data-label', col);
+        const val = (it && typeof it === 'object') ? (it[col] === undefined ? '' : it[col]) : it;
+        if (typeof val === 'object') td.innerHTML = `<pre style="margin:0">${escapeHtml(JSON.stringify(val,null,2))}</pre>`;
+        else td.innerHTML = escapeHtml(String(val));
+        tr.appendChild(td);
+      });
+
+      // ações
+      const tdAct = document.createElement('td');
+      tdAct.className = 'actions';
+      const viewBtn = document.createElement('button'); viewBtn.textContent = 'Ver'; viewBtn.className = 'ghost';
+      const delBtn = document.createElement('button'); delBtn.textContent = 'Excluir'; delBtn.className = 'ghost';
+      // marcar atributos para identificação
+      // identificador: collectionName + '|' + uniqueKey (value)
+      const collName = currentCollection === '__all' ? it.__collection : currentCollection;
+      const uniqueVal = (it && typeof it === 'object') ? (it[uniqueKeyField] || it.email || it.nome || JSON.stringify(it)) : String(it);
+      const ident = encodeURIComponent(`${collName}::${uniqueVal}`);
+      viewBtn.setAttribute('data-ident', ident);
+      delBtn.setAttribute('data-ident', ident);
+      tdAct.appendChild(viewBtn);
+      tdAct.appendChild(delBtn);
+      tr.appendChild(tdAct);
+
+      tableBody.appendChild(tr);
+    });
+
+    // atualizar meta UI
+    countEl.textContent = filtered.length;
+    currentCollectionEl.textContent = (currentCollection === '__all') ? 'Todas' : currentCollection;
+    currentItems = filtered;
+    // popular filterKey (campos)
+    populateFilterKey(columns);
+    // atualizar raw view
+    rawPre.textContent = JSON.stringify(LS, null, 2);
+  }
+
+  function populateFilterKey(cols) {
+    filterKey.innerHTML = '<option value="">(nenhum)</option>';
+    cols.forEach(c => {
+      const o = document.createElement('option'); o.value = c; o.textContent = c; filterKey.appendChild(o);
+    });
+  }
+
+  // excluir item dado ident = encodeURIComponent(collection::uniqueVal)
+  function deleteByIdent(identEncoded) {
+    try {
+      const decoded = decodeURIComponent(identEncoded);
+      const [collName, uniqueVal] = decoded.split('::');
+      const coll = COLLECTIONS.get(collName);
+      if (!coll) { alert('Coleção não encontrada: '+collName); return false; }
+      // encontrar índice com correspondência (por cpf/cnpj/id/email/nome)
+      const idx = coll.findIndex(it => {
+        if (!it || typeof it !== 'object') return JSON.stringify(it) === uniqueVal;
+        return String(it.cpf || it.cnpj || it.id || it.email || it.nome || it.name || JSON.stringify(it)) === uniqueVal;
+      });
+      if (idx === -1) { alert('Registro não encontrado na coleção'); return false; }
+      // remover do array e persistir no localStorage
+      coll.splice(idx,1);
+      // se coleção veio de mock_db_v1, gravar de volta dentro do objeto mock_db_v1
+      if (LS['mock_db_v1'] && LS['mock_db_v1'][collName]) {
+        LS['mock_db_v1'][collName] = coll;
+        localStorage.setItem('mock_db_v1', JSON.stringify(LS['mock_db_v1']));
+      } else {
+        // caso seja chave direta (ex: 'usuarios')
+        localStorage.setItem(collName, JSON.stringify(coll));
+      }
+      refreshState();
+      return true;
+    } catch (e) { console.error(e); alert('Erro ao excluir'); return false; }
+  }
+
+  // exportar coleção atual como CSV
+  function exportCollectionCsv() {
+    // pegar currentItems e gerar csv a partir de colunas deduzidas
+    const items = currentItems.slice();
+    if (!items.length) return alert('Sem registros para exportar');
+    // deduzir colunas
+    const columns = deduceColumns(items);
+    const rows = items.map(it => {
+      return columns.map(col => {
+        const v = (it && typeof it === 'object') ? (it[col] === undefined ? '' : it[col]) : it;
+        return `"${String(v === null || v === undefined ? '' : v).replace(/"/g,'""')}"`;
+      }).join(',');
+    });
+    const csv = [columns.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = (currentCollection==='__all' ? 'all_collections.csv' : currentCollection + '.csv'); document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  // exportar item selecionado (json)
+  function exportSelectedItem(identEncoded) {
+    const decoded = decodeURIComponent(identEncoded);
+    const [collName, uniqueVal] = decoded.split('::');
+    const coll = COLLECTIONS.get(collName);
+    if (!coll) return alert('Coleção não encontrada');
+    const found = coll.find(it => {
+      if (!it || typeof it !== 'object') return JSON.stringify(it) === uniqueVal;
+      return String(it.cpf || it.cnpj || it.id || it.email || it.nome || it.name || JSON.stringify(it)) === uniqueVal;
+    });
+    if (!found) return alert('Item não encontrado');
+    const blob = new Blob([JSON.stringify(found, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${collName}_item.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  // reset mock_db_v1
+  function resetMock() { if (!confirm('Resetar mock_db_v1 para o estado inicial?')) return; localStorage.removeItem('mock_db_v1'); location.reload(); }
+
+  // eventos
+  collectionSelect.addEventListener('change', (e) => { currentCollection = e.target.value || '__all'; renderCurrent(); });
+  searchInput.addEventListener('input', () => renderCurrent());
+  refreshBtn.addEventListener('click', () => refreshState());
+  exportCsvBtn.addEventListener('click', () => exportCollectionCsv());
+  resetMockBtn.addEventListener('click', resetMock);
+  showRawBtn.addEventListener('click', () => { rawPre.style.display = rawPre.style.display === 'none' ? 'block' : 'none'; });
+  clearSelectionBtn.addEventListener('click', () => { selectedKeyForDelete = null; alert('Seleção limpa'); });
+
+  // delegação de cliques na tabela para ver/excluir
+  tableBody.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const ident = btn.getAttribute('data-ident');
+    if (!ident) return;
+    if (btn.textContent.trim().toLowerCase() === 'ver') {
+      // mostrar JSON
+      const decoded = decodeURIComponent(ident);
+      const [collName, uniqueVal] = decoded.split('::');
+      const coll = COLLECTIONS.get(collName);
+      if (!coll) return alert('Coleção não encontrada');
+      const found = coll.find(it => {
+        if (!it || typeof it !== 'object') return JSON.stringify(it) === uniqueVal;
+        return String(it.cpf || it.cnpj || it.id || it.email || it.nome || it.name || JSON.stringify(it)) === uniqueVal;
+      });
+      alert(JSON.stringify(found || {}, null, 2));
+    } else if (btn.textContent.trim().toLowerCase() === 'excluir') {
+      if (!confirm('Excluir este registro do localStorage?')) return;
+      const ok = deleteByIdent(ident);
+      if (!ok) alert('Não foi possível localizar/excluir o registro');
+    }
+  });
+
+  // ações de exportar/excluir selecionado
+  deleteSelectedBtn.addEventListener('click', () => {
+    if (!selectedKeyForDelete) return alert('Nenhum item selecionado (clique em Excluir na linha desejada).');
+    if (!confirm('Excluir o item selecionado?')) return;
+    const ok = deleteByIdent(selectedKeyForDelete);
+    if (!ok) alert('Falha ao excluir');
+  });
+  exportSelectedBtn.addEventListener('click', () => {
+    if (!selectedKeyForDelete) return alert('Nenhum item selecionado (clique em Ver na linha desejada para obter ident).');
+    exportSelectedItem(selectedKeyForDelete);
+  });
+
+  // inicial
+  refreshState();
+</script>
+</body>
+</html>

@@ -7,14 +7,13 @@
     <link rel="stylesheet" href="/Assets/Styles/global.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    
+<body data-resource="usuarios"> <!-- Aqui definimos o tipo de recurso -->
+
     <div class="container">
         <header class="app-header">
-           
-             <div class="logo logo-image">
-                <img class="logoimg" src="/Assets/Images/LogoCompleta.png" alt="Logo" />
-                
+            <h1 class="logo-text">UniNew</h1>
+            <div class="logo-image">
+                <img src="/Assets/Images/Logo.png" alt="Logo UniNew">
             </div>
         </header>
 
@@ -37,13 +36,13 @@
                     <label for="telefone">Telefone</label>
                     <input type="number" id="telefone" name="telefone">
                 </div>
+
                 <div class="input-submit">
-                    <button type="reset" class="btn btn-yellow">EDITAR</button>
+                    <button type="button" id="editarBtn" class="btn btn-yellow">EDITAR</button>
                     <button type="submit" class="btn btn-green">SALVAR</button>
                 </div>
-                
             </form>
-            
+
             <p id="message" class="message"></p>
         </main>
     </div>
@@ -52,6 +51,7 @@
         <h2>CADASTRO</h2>
     </footer>
 
+    <script src="/Assets/Js/global.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
