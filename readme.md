@@ -1,9 +1,16 @@
+# 🌐 UniNew  
 
+![Status](https://img.shields.io/badge/Status-Finalizado-brightgreen)
+![ADS](https://img.shields.io/badge/Projeto%20Integrador-ADS-blue)
+![FeitoCom](https://img.shields.io/badge/Feito%20com-❤️-red)
+![Frontend](https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JS-yellow)
+![Backend](https://img.shields.io/badge/Backend-Node.js-green)
+![Versionamento](https://img.shields.io/badge/Controle%20de%20Versão-GitHub-black)
 
-# 🌐 UniNew
+---
 
-Este é um **projeto integrador** desenvolvido para o curso de **Análise e Desenvolvimento de Sistemas (ADS)**, realizado pelos integrandes do grupo 10.  
-O sistema **UniNew** tem como objetivo centralizar e simplificar o gerenciamento de informações acadêmicas de alunos, docentes, funcionários e fornecedores proporcionando uma interface simples e funcional.
+Este é um **projeto integrador** desenvolvido para o curso de **Análise e Desenvolvimento de Sistemas (ADS)**, realizado pelos integrantes do **Grupo 10**.  
+O sistema **UniNew** tem como objetivo centralizar e simplificar o gerenciamento de informações acadêmicas de **alunos, docentes, funcionários e fornecedores**, proporcionando uma interface simples e funcional.
 
 ---
 
@@ -17,15 +24,13 @@ Durante o desenvolvimento, o foco foi em manter a **usabilidade e clareza da nav
 ---
 
 ## 👥 Integrantes
-- Bruno Henrique Meira da Silva 
-- Felipe Silva dos Santos Gomes 
-- Gustavo Miguel Mayer 
-- Mateus Henrique Ferreira 
-- Wilgner Feliciano Rizzi 
+- **Bruno Henrique Meira da Silva**  
+- **Felipe Silva dos Santos Gomes**  
+- **Gustavo Miguel Mayer**  
+- **Mateus Henrique Ferreira** 
+- **Wilgner Feliciano Rizzi**  
 
 ---
-
-
 
 ## 🧠 Pontos de Avaliação
 
@@ -46,19 +51,30 @@ Optamos por utilizar tecnologias simples e diretas para garantir portabilidade e
 
 ---
 
-## Funcionamento
+## ⚙️ Funcionamento
 
-Ao inserir as informações de login e senha, será verificado se as informações estão corretas, caso afirmativo, a pagina é redirecionada para o dashboard do respectivo tipo de usuário ( Aluno, Docente, Administrativo e Gerente ). A partir do dashbord cada usuário poderá optar entre as respectivas opções de serviços.
-Para criar novos alunos ou docentes, o usuário deve clicar em primeira vez aqui?, na tela de login, preencher o cadastro. Após isso o funcionario ou gerente terá que entrar em aluno ou docente e concluir o cadastro. feito isso o novo usuário terá acesso. Visto que ainda estamos em uma versão beta, alguns usuários foram pré cadastrados no sistema e funcionários/gerentes somente são cadastrados via código.
+Ao inserir as informações de login e senha, será verificado se as credenciais estão corretas.  
+Caso afirmativo, a página é redirecionada para o **dashboard** do respectivo tipo de usuário (**Aluno**, **Docente**, **Administrativo** ou **Gerente**).  
 
+A partir do dashboard, cada usuário poderá escolher entre as opções de serviços disponíveis.  
+Para criar novos alunos ou docentes, o usuário deve clicar em **“Primeira vez aqui?”** na tela de login e preencher o cadastro.  
+Após isso, o **funcionário ou gerente** deverá acessar a área de aluno ou docente e concluir o cadastro.  
+Feito isso, o novo usuário terá acesso ao sistema.
 
-Logins pré carregados:
+> ⚠️ Como esta é uma **versão beta**, alguns usuários já foram **pré-cadastrados** no sistema, e **funcionários/gerentes** só podem ser cadastrados **via código**.
 
-Aluno:       11111111111
-Docente:     22222222222
-Funcionario: 33333333333
-Gerente:     44444444444
+---
 
-senha padrão: senha123
+### 🔑 Logins pré-carregados:
 
+| Tipo de Usuário | CPF          | Senha     |
+|-----------------|---------------|-----------|
+| Aluno           | 11111111111   | senha123  |
+| Docente         | 22222222222   | senha123  |
+| Funcionário     | 33333333333   | senha123  |
+| Gerente         | 44444444444   | senha123  |
 
+---
+
+📘 **UniNew - Projeto Integrador ADS**  
+Feito com ❤️ pela equipe do **Grupo 10**
