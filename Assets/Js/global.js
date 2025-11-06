@@ -14,7 +14,7 @@ const MODO_TESTE = true;
   const STORAGE_KEY = 'usuario_logado';
   const MOCK_DB_KEY = 'mock_db_v1';
 
-  // Config chave por recurso
+ 
   const CHAVE_POR_RESOURCE = {
     fornecedores: 'cnpj',
     alunos: 'cpf',
@@ -22,10 +22,10 @@ const MODO_TESTE = true;
     usuarios: 'cpf',
     cursos: 'codigo',
     disciplinas: 'codigo',
-    notas: 'id' // notas terão id gerado no mock
+    notas: 'id' 
   };
 
-  // --- Mock DB helpers ---
+  
   function _initialMockDb() {
     const usuarios = [
       { cpf: '11111111111', nome: 'Aluno Teste', email: 'aluno@teste.com', telefone: '0000-0001', tipo_conta: 'aluno', senha: 'senha123' },
@@ -77,10 +77,10 @@ const MODO_TESTE = true;
   }
   function _saveMockDb(db) { localStorage.setItem(MOCK_DB_KEY, JSON.stringify(db)); }
 
-  // util: gera id simples para notas
+  
   function _genId(prefix = 'id') { return prefix + '_' + Math.random().toString(36).slice(2,9); }
 
-  // parse endpoint (('/usuarios/111' or '/usuarios?cpf=111') => segments, params)
+  
   function _parseEndpoint(endpoint) {
     const u = String(endpoint).replace(/^https?:\/\/[^/]+/, '');
     const [pathPart, qs] = u.split('?');
@@ -91,18 +91,18 @@ const MODO_TESTE = true;
     return { segments, params };
   }
 
-  // mock handler
+  
   async function _mockRequest(method, endpoint, data=null) {
-    // delay simulado
+    
     await new Promise(r=>setTimeout(r,50));
     const db = _loadMockDb();
     const { segments, params } = _parseEndpoint(endpoint);
 
-    // auth
+    
     if (segments[0] === 'auth') {
       if (segments[1] === 'login' && method.toUpperCase()==='POST') {
         const { email, cpf, senha, username, password } = data || {};
-        // aceita varias chaves
+        
         const found = db.usuarios.find(u =>
           (email && u.email === email) ||
           (cpf && u.cpf === cpf) ||
@@ -119,7 +119,7 @@ const MODO_TESTE = true;
       if (segments[1] === 'logout' && method.toUpperCase()==='POST') return { ok: true };
     }
 
-    // resource
+   
     const resource = segments[0];
     if (!resource) return { message: 'mock ok' };
     const collection = db[resource];
@@ -179,14 +179,14 @@ const MODO_TESTE = true;
     }
   }
 
-  // --- API pública ---
+ 
   const API = {
     baseUrl: '/api',
 
-    // request genérica (encaminha pro mock se MODO_TESTE)
+   
     async request(method, endpoint, data=null, extraHeaders={}) {
       if (MODO_TESTE) {
-        // normaliza endpoint removendo baseUrl se existir
+        
         const normalized = String(endpoint).replace(new RegExp('^' + this.baseUrl), '');
         try {
           return await _mockRequest(method, normalized, data);
@@ -195,7 +195,7 @@ const MODO_TESTE = true;
         }
       }
 
-      // modo real
+      
       const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
       const opts = { method: method.toUpperCase(), headers: Object.assign({'Content-Type':'application/json'}, extraHeaders) };
       if (data != null && method.toUpperCase() !== 'GET' && method.toUpperCase() !== 'DELETE') opts.body = JSON.stringify(data);
@@ -220,11 +220,11 @@ const MODO_TESTE = true;
     put(endpoint, data={}, headers={}) { return this.request('PUT', endpoint, data, headers); },
     delete(endpoint, data=null, headers={}) { return this.request('DELETE', endpoint, data, headers); },
 
-    // usuario_logado
+    
     setUsuarioLogado(obj) {
       if (obj == null) localStorage.removeItem(STORAGE_KEY);
       else {
-        // normalize names: garantir que exista 'tipo_conta' e remover senha
+        
         const normalized = Object.assign({}, obj);
         if (normalized.tipoConta && !normalized.tipo_conta) normalized.tipo_conta = normalized.tipoConta;
         if (normalized.tipo && !normalized.tipo_conta) normalized.tipo_conta = normalized.tipo;
@@ -245,9 +245,9 @@ const MODO_TESTE = true;
       return updated;
     },
 
-    // auth
+    
     async login(credentials) {
-      // aceita { email|cpf|username, senha|password }
+      
       const resp = await this.post('/auth/login', credentials);
       if (resp && resp.usuario) {
         const payload = Object.assign({}, resp.usuario);
@@ -266,14 +266,14 @@ const MODO_TESTE = true;
       return {};
     },
 
-    // onAuthChange
+    
     _onAuthChangeCallbacks: [],
     onAuthChange(cb) {
       if (typeof cb === 'function') this._onAuthChangeCallbacks.push(cb);
       return () => { this._onAuthChangeCallbacks = this._onAuthChangeCallbacks.filter(fn => fn !== cb); };
     },
 
-    // recursos helpers
+    
     resource(resourceName) {
       const base = `/${resourceName}`;
       return {
@@ -285,7 +285,7 @@ const MODO_TESTE = true;
       };
     },
 
-    // utilitários de debug / mock
+    
     getMockDb() { if (!MODO_TESTE) return null; return _loadMockDb(); },
     resetMock() { if (!MODO_TESTE) return; localStorage.removeItem(MOCK_DB_KEY); _loadMockDb(); },
   };
@@ -294,7 +294,7 @@ const MODO_TESTE = true;
     (API._onAuthChangeCallbacks || []).forEach(cb => { try { cb(user); } catch (e) { console.error('onAuthChange callback error', e); } });
   }
 
-  // conveniência resources
+  
   API.alunos = API.resource('alunos');
   API.docentes = API.resource('docentes');
   API.fornecedores = API.resource('fornecedores');

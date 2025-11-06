@@ -1,20 +1,13 @@
-/* script.js - script genérico para página de cadastro (alunos/docentes/fornecedores/usuarios)
-   Comportamento:
-   - Se usuário comum (aluno/docente/usuario) logado: preenche o formulário e bloqueia a chave.
-   - Se funcionário/gerente ou nenhum login: formulário inicia em branco. Ao salvar:
-       * se já existir registro com a chave -> PUT (update)
-       * se não existir -> POST (create) e atribui senha 'senha123' se não fornecida
-   - Usa API.resource(...) para funcionar tanto com backend real quanto com MODO_TESTE.
-*/
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('cadastroForm');
   if (!form) return console.warn('Form cadastro não encontrado: #cadastroForm');
 
-  // detecta recurso
+ 
   const resource = (form.getAttribute('data-resource') || 'usuarios').toLowerCase();
 
-  // mapeamento de chave por recurso (se fornecedor usa cnpj)
+  )
   const chavePorResource = {
     fornecedores: 'cnpj',
     alunos: 'cpf',
@@ -23,22 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   const chaveField = chavePorResource[resource] || 'cpf';
 
-  // inputs (nome padronizado)
+  
   const nameInput = form.querySelector('#name');
   const cpfInput = form.querySelector(`#${chaveField}`) || form.querySelector('#cpf') || form.querySelector('#cnpj');
   const emailInput = form.querySelector('#email');
   const telefoneInput = form.querySelector('#telefone');
   const messageEl = document.getElementById('message');
 
-  const btnEditar = document.querySelector('.btn-yellow');
+  const btnEditar = document.querySelector('.btn-yellow') || document.getElementById('editarBtn');
   const btnSalvar = form.querySelector('button[type="submit"]');
 
   if (btnEditar && btnEditar.type && btnEditar.type.toLowerCase() === 'reset') {
     btnEditar.type = 'button';
   }
 
-  let chaveImutavel = false; // true se o registro já tem a chave (cpf/cnpj) e não pode ser alterada
-  let isAdminEditor = false;  // true se o usuário logado for funcionario/gerente (pode criar/atualizar outros)
+  let chaveImutavel = false; 
+  let isAdminEditor = false;  
 
   function setMessage(txt, isError = false) {
     if (!messageEl) return;
@@ -93,7 +86,19 @@ document.addEventListener('DOMContentLoaded', () => {
         chaveImutavel = true;
       }
       setMessage('Dados salvos com sucesso.');
+
+      // desabilita inputs e bloqueia chave após salvar
       toggleInputs(false);
+      if (cpfInput && usuarioAtualizado && usuarioAtualizado[chaveField]) {
+        cpfInput.value = usuarioAtualizado[chaveField];
+        cpfInput.disabled = true;
+      }
+
+      // volta para a página anterior após 1 segundo (requisito solicitado)
+      setTimeout(() => {
+        try { window.history.back(); } catch (e) { window.location.href = '/'; }
+      }, 1000);
+
       return usuarioAtualizado;
     } catch (err) {
       console.error(err);
@@ -110,8 +115,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Se usuário é funcionario ou gerente, consideramos admin/editor
   isAdminEditor = tipoUsuario === 'funcionario' || tipoUsuario === 'gerente' || tipoUsuario === 'adm' || tipoUsuario === 'administrador';
 
+  // MOSTRAR / OCULTAR botão EDITAR conforme usuário logado
+  if (btnEditar) {
+    if (!usuario) {
+      // se não tem usuário logado, oculta botão EDITAR
+      btnEditar.style.display = 'none';
+    } else {
+      // se existe usuário logado, mostra o botão (caso estivesse oculto)
+      btnEditar.style.display = '';
+    }
+  }
+
   if (usuario && !isAdminEditor) {
-    // Usuário normal (aluno/docente/usuario) — preenche e trava chave se existir
+    // Usuário normal (aluno/docente/usuario) — preenche e trava chave if existir
     if (usuario[chaveField]) {
       fillFormFromUser(usuario);
       chaveImutavel = true; // chave já existe -> não pode ser alterada
@@ -135,12 +151,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // editar
-  btnEditar && btnEditar.addEventListener('click', (e) => {
-    e.preventDefault();
-    // habilita edição, mas se a chave for imutável, mantemos o campo chave desabilitado
-    toggleInputs(true);
-    setMessage('Edição habilitada. Faça suas alterações e clique em SALVAR. (CPF/CNPJ não editável se já cadastrado.)');
-  });
+  if (btnEditar) {
+    btnEditar.addEventListener('click', (e) => {
+      e.preventDefault();
+      // habilita edição, mas se a chave for imutável, mantemos o campo chave desabilitado
+      toggleInputs(true);
+      setMessage('Edição habilitada. Faça suas alterações e clique em SALVAR. (CPF/CNPJ não editável se já cadastrado.)');
+    });
+  }
 
   // salvar
   form.addEventListener('submit', async (e) => {
@@ -211,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
           cpfInput.disabled = true;
         }
       }
+      // (nota: saveData já faz o redirect/back após 1s)
     } catch (err) {
       /* mensagem já mostrada em saveData */
     }
@@ -224,9 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
       isAdminEditor = false;
       toggleInputs(true);
       setMessage('Usuário deslogado. Preencha o formulário para criar um novo registro.');
+      // oculta o botão EDITAR quando deslogado
+      if (btnEditar) btnEditar.style.display = 'none';
     } else {
       const tipo = (u.tipo_conta || u.tipoConta || u.tipo || '').toString().toLowerCase();
       isAdminEditor = tipo === 'funcionario' || tipo === 'gerente' || tipo === 'adm' || tipo === 'administrador';
+      // mostra o botão EDITAR se há usuário logado
+      if (btnEditar) btnEditar.style.display = '';
       if (!isAdminEditor && u[chaveField]) {
         fillFormFromUser(u);
         chaveImutavel = true;
