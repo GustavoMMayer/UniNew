@@ -1,5 +1,4 @@
-// script.js — Novo Curso (integra com global.js)
-// Versão corrigida: garante que mock_db_v1 tenha coleções `disciplinas` e `cursos` no modo teste
+
 document.addEventListener('DOMContentLoaded', () => {
   const courseInput = document.getElementById('courseName');
   const discInput = document.getElementById('disciplineInput');
@@ -11,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const disciplines = [];
 
-  // Cursos permitidos (exibidos)
+  
   const CURSO_OPCOES = ['ADS', 'Marketing', 'Administração'];
 
   (function createCourseDatalist(){
@@ -110,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     _hideTimer = setTimeout(() => hideMessage(), ms);
   }
 
-  // Se mock (API.getMockDb disponível), garante coleções existentes
+  
   function ensureMockCollectionsExist(names = []) {
     try {
       if (typeof API === 'undefined' || typeof API.getMockDb !== 'function') return;
@@ -124,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       if (changed) {
-        // persiste diretamente no localStorage (mock_db_v1)
+        
         localStorage.setItem('mock_db_v1', JSON.stringify(mock));
         console.log('[script] mock_db_v1 atualizado com coleções:', names);
       }
@@ -133,30 +132,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // upsert discipline helper (POST then PUT on conflict)
+  
   async function upsertDiscipline(discPayload) {
     const svc = API.disciplinas || API.resource('disciplinas');
     try {
       return await svc.create(discPayload);
     } catch (err) {
       if (err && err.status === 409) {
-        // tenta PUT
+        
         const code = discPayload.codigo || codeFromName(discPayload.nome);
         return await svc.update(encodeURIComponent(code), discPayload);
       }
-      // se recurso não encontrado (mock sem coleção) lançará aqui — propagar
+      
       throw err;
     }
   }
 
-  // main save adapted to mock presence
+  
   async function save() {
     hideMessage();
     const courseName = sanitize(courseInput.value);
     if (!courseName) { showMessage('Informe o nome do curso antes de salvar.', 'error'); return; }
     if (disciplines.length === 0) { showMessage('Adicione ao menos uma disciplina antes de salvar.', 'error'); return; }
 
-    // valida curso contra opções (exige uma das 3)
+    
     const okCurso = CURSO_OPCOES.some(c => c.toLowerCase() === courseName.toLowerCase());
     if (!okCurso) {
       showMessage(`Curso inválido. Opções: ${CURSO_OPCOES.join(', ')}.`, 'error');
@@ -169,13 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (typeof API === 'undefined') throw new Error('API global não encontrado. Verifique se global.js foi carregado antes.');
 
-      // garantir coleções no mock para evitar "Recurso não encontrado"
+      
       ensureMockCollectionsExist(['disciplinas', 'cursos']);
 
       const disciplinasSvc = API.disciplinas || API.resource('disciplinas');
       const cursosSvc = API.cursos || API.resource('cursos');
 
-      // 1) Upsert each discipline (POST then PUT on conflict)
+      
       const createdDiscs = [];
       for (const d of disciplines) {
         const discCode = codeFromName(d.name);
@@ -184,9 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const created = await upsertDiscipline(discPayload);
           createdDiscs.push(created);
         } catch (err) {
-          // detectar caso de recurso não encontrado no mock
+          
           if (err && err.payload && (String(err.payload.message).toLowerCase().includes('recurso não encontrado') || String(err.message).toLowerCase().includes('recurso não encontrado'))) {
-            // tentamos criar a coleção e repetir (segunda chance)
+            
             try {
               ensureMockCollectionsExist(['disciplinas', 'cursos']);
               const created2 = await upsertDiscipline(discPayload);
@@ -200,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // 2) Create or update course: codigo derived from name
+      
       const courseCode = codeFromName(courseName);
       const coursePayload = {
         codigo: courseCode,
@@ -215,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (errCourse && errCourse.status === 409) {
           courseResult = await cursosSvc.update(encodeURIComponent(courseCode), coursePayload);
         } else if (errCourse && (String(errCourse.message).toLowerCase().includes('recurso não encontrado') || (errCourse.payload && String(errCourse.payload.message).toLowerCase().includes('recurso não encontrado')))) {
-          // no mock, criar coleção e tentar de novo
+          
           ensureMockCollectionsExist(['cursos']);
           courseResult = await cursosSvc.create(coursePayload);
         } else {
@@ -223,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // sucesso geral
+      
       showMessage('Curso e disciplinas salvos com sucesso.');
       console.log('Curso salvo:', courseResult);
       hideMessageAfter(1200);
@@ -243,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // eventos
+  
   addBtn.addEventListener('click', () => addDiscipline(discInput.value));
   removeSelectedBtn.addEventListener('click', removeSelected);
   saveBtn.addEventListener('click', save);
@@ -255,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // expose and render
+  
   window.__UNI_DISCIPLINES = { get: () => disciplines, render };
   render();
 });

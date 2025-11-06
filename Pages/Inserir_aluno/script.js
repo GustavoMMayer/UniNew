@@ -1,4 +1,4 @@
-// script.js - Inserir Aluno (integra com global.js)
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('alunoForm');
   if (!form) return console.warn('Form #alunoForm não encontrado');
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const CURSOS = ['ADS', 'Marketing', 'Administração'];
   const SITUACOES = ['Ativo', 'Inativo'];
 
-  // cria datalists (sugestões)
+  
   (function createDatalists(){
     if (cursoInput) {
       let dl = document.getElementById('cursos-datalist');
@@ -61,10 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (enabled) cpfInput.focus();
   }
 
-  // estado
+  
   let podeEditar = false;
 
-  // reavalia permissão com retries para cobrir casos de sincronização
+  
   function updatePermissionAndUI(source='init') {
     const usuario = (typeof API !== 'undefined') ? API.getUsuarioLogado() : null;
     const novo = Boolean(usuario && isEditorFromUser(usuario));
@@ -80,17 +80,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // inicial + pequenas retries
+  
   updatePermissionAndUI('first');
   setTimeout(()=>updatePermissionAndUI('retry-200ms'), 200);
   setTimeout(()=>updatePermissionAndUI('retry-1000ms'), 1000);
 
-  // ouve auth changes
+  
   if (typeof API !== 'undefined' && typeof API.onAuthChange === 'function') {
     API.onAuthChange((u) => {
       console.log('[inserir-aluno] onAuthChange', u);
       updatePermissionAndUI('onAuthChange');
-      // se liberou edição, opcionalmente limpar formulário
+      
       if (isEditorFromUser(u)) form.reset();
     });
   } else {
@@ -100,12 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function validarCurso(val) { return CURSOS.some(c => c.toLowerCase() === String(val||'').toLowerCase()); }
   function validarSituacao(val) { return SITUACOES.some(s => s.toLowerCase() === String(val||'').toLowerCase()); }
 
-  // submit: apenas PUT se usuário existir
+  
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     setMessage('');
 
-    // revalida permissão
+    
     updatePermissionAndUI('before-submit');
     if (!podeEditar) { setMessage('Você não tem permissão para executar essa operação.', true); return; }
 
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const usuariosSvc = API.usuarios || API.resource('usuarios');
       const alunosSvc = API.alunos || API.resource('alunos');
 
-      // obter usuário existente
+      
       let usuarioExistente = null;
       try {
         usuarioExistente = await usuariosSvc.getById(encodeURIComponent(cpfRaw));
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         throw err;
       }
 
-      // montar payload: mescla e garante tipo_conta: 'aluno'
+      
       const payload = Object.assign({}, usuarioExistente, {
         curso: curso,
         situacao: situacao,
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setMessage('Atualizando usuário (PUT)...');
       const usuarioResult = await usuariosSvc.update(encodeURIComponent(cpfRaw), payload);
 
-      // tentar atualizar alunos via PUT apenas se existir
+      
       try {
         let alunoExistente = null;
         try {
@@ -176,14 +176,14 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Erro ao atualizar coleção alunos (PUT):', errAlunoUpd);
       }
 
-      // se o usuarioAtual for o usuario_logado, atualiza localStorage
+      
       const usuarioLogado = API.getUsuarioLogado();
       if (usuarioLogado && (usuarioLogado.cpf === cpfRaw || usuarioLogado.cnpj === cpfRaw)) {
         const merged = Object.assign({}, usuarioLogado, usuarioResult);
         API.setUsuarioLogado(merged);
       }
 
-      // sucesso: mensagem e volta à página anterior em 1s
+      
       setMessage('Dados do aluno atualizados com sucesso. Voltando...', false);
       console.log('Usuário atualizado (PUT):', usuarioResult);
       setTimeout(() => { try { window.history.back(); } catch(e) { window.location.href = '/'; } }, 1000);
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // UX: ao perder foco do CPF, preencher curso/situacao se o usuario existir
+  
   cpfInput && cpfInput.addEventListener('blur', async () => {
     const cpfRaw = (cpfInput.value || '').replace(/\D/g, '').trim();
     if (!cpfRaw) return;
@@ -209,15 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       if (err && err.status === 404) {
-        // não existe — limpa campos curso/situação
-        // cursoInput.value = ''; situacaoInput.value = '';
+        
       } else {
         console.error(err);
       }
     }
   });
 
-  // validações em tempo real para ajudar UX
+  
   cursoInput && cursoInput.addEventListener('input', () => {
     if (!cursoInput.value) { cursoInput.setCustomValidity(''); return; }
     if (!validarCurso(cursoInput.value)) { cursoInput.setCustomValidity('Curso inválido.'); cursoInput.reportValidity(); }

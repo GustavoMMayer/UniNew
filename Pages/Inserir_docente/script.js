@@ -1,4 +1,4 @@
-// script.js - Inserir Docente (integra com global.js)
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('docenteForm');
   if (!form) return console.warn('Form #docenteForm não encontrado');
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     messageEl.className = 'message' + (isError ? ' error' : ' success');
   }
 
-  // normaliza tipo de usuário (aceita variações)
+  
   function normalizeTipoFromUser(u) {
     if (!u) return '';
     const cands = [u.tipo_conta, u.tipoConta, u.tipo, u.role, u.role_name];
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // init + retries
+  
   updatePermissionAndUI('first');
   setTimeout(()=>updatePermissionAndUI('retry-200ms'), 200);
   setTimeout(()=>updatePermissionAndUI('retry-1000ms'), 1000);
@@ -70,14 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('[inserir-docente] API.onAuthChange não disponível — verifique ordem dos scripts');
   }
 
-  // valida carga
+  
   function validarCarga(val) {
     if (val == null || val === '') return false;
     const n = Number(val);
     return Number.isFinite(n) && n > 0;
   }
 
-  // preencher dados existentes ao perder foco do CPF
+  
   cpfInput && cpfInput.addEventListener('blur', async () => {
     const cpf = (cpfInput.value || '').replace(/\D/g, '').trim();
     if (!cpf) return;
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const usuariosSvc = API.usuarios || API.resource('usuarios');
       const user = await usuariosSvc.getById(encodeURIComponent(cpf));
       if (user) {
-        // preenche alguns campos se existir
+        
         if (user.grau_academico && grauInput) grauInput.value = user.grau_academico;
         if (user.disciplina && disciplinaInput) disciplinaInput.value = user.disciplina;
         if (user.carga_horaria && cargaInput) cargaInput.value = user.carga_horaria;
@@ -93,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       if (err && err.status === 404) {
-        // não existe - nada a preencher
+        
       } else {
         console.error(err);
       }
     }
   });
 
-  // submit: apenas PUT (usuário deve existir)
+  
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     setMessage('');
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const usuariosSvc = API.usuarios || API.resource('usuarios');
       const docentesSvc = API.docentes || API.resource('docentes');
 
-      // checa usuário
+      
       let usuarioExistente = null;
       try {
         usuarioExistente = await usuariosSvc.getById(encodeURIComponent(cpfRaw));
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         throw err;
       }
 
-      // payload para usuários: mescla e seta tipo_conta: 'docente' + campos do docente
+      
       const payloadUsuario = Object.assign({}, usuarioExistente, {
         tipo_conta: 'docente',
         grau_academico: grau,
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setMessage('Atualizando usuário (PUT)...');
       const usuarioResult = await usuariosSvc.update(encodeURIComponent(cpfRaw), payloadUsuario);
 
-      // atualizar docentes por PUT somente se registro existir (não cria)
+      
       try {
         let docenteExistente = null;
         try {
@@ -167,21 +167,21 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           await docentesSvc.update(encodeURIComponent(cpfRaw), payloadDocente);
         } else {
-          // não cria novos docentes por aqui — log para debug
+          
           console.warn('Registro em "docentes" não encontrado para este CPF — não será criado (apenas PUT).');
         }
       } catch (errDocUpd) {
         console.warn('Erro ao atualizar coleção docentes (PUT):', errDocUpd);
       }
 
-      // se for o usuario_logado, atualiza localStorage com novos campos
+      
       const usuarioLogado = API.getUsuarioLogado();
       if (usuarioLogado && (usuarioLogado.cpf === cpfRaw || usuarioLogado.cnpj === cpfRaw)) {
         const merged = Object.assign({}, usuarioLogado, usuarioResult);
         API.setUsuarioLogado(merged);
       }
 
-      // sucesso
+      
       setMessage('Docente atualizado com sucesso. Voltando...', false);
       console.log('Docente atualizado (PUT):', usuarioResult);
       setTimeout(() => { try { window.history.back(); } catch(e) { window.location.href = '/'; } }, 1000);

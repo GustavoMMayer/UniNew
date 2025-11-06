@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function setMessage(text, isError = false) {
     if (!messageEl) return;
     messageEl.textContent = text || '';
-    // classes: "message", "message error", "message success"
+    
     messageEl.className = 'message' + (isError ? ' error' : ' success');
     messageEl.style.color = isError ? 'crimson' : '#064e3b';
   }
@@ -27,27 +27,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setMessage('Verificando login...');
 
-    // monta credenciais compatíveis com o mock (MODO_TESTE) e com backends reais
+    
     let credentialsToSend;
     if (typeof MODO_TESTE !== 'undefined' && MODO_TESTE) {
-      // se parece com email usa email, senão trata como cpf
+      
       if (login.includes('@')) {
         credentialsToSend = { email: login, senha: senha };
       } else {
-        // remove caracteres não numéricos do CPF (opcional)
+        
         const onlyDigits = login.replace(/\D/g, '');
         credentialsToSend = { cpf: onlyDigits, senha: senha };
       }
     } else {
-      // modo real: username/password (ajuste se seu backend esperar outros nomes)
+      
       credentialsToSend = { username: login, password: senha };
     }
 
     try {
-      // Chama API.login — o global.js em modo teste encaminhará para o mock
+      
       const resp = await API.login(credentialsToSend);
 
-      // obtém o usuario logado salvo pelo API.login
+      
       const usuario = API.getUsuarioLogado();
 
       if (!usuario) {
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // tenta identificar o campo que guarda o tipo da conta (compatibilidade)
+      
       const tipo = (usuario.tipo_conta || usuario.tipoConta || usuario.tipo || '').toString().toLowerCase();
 
       if (!tipo) {
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       setMessage('Login bem-sucedido! Redirecionando...');
 
-      // redireciona com base no tipo
+      
       setTimeout(() => {
         if (tipo === 'aluno') {
           window.location.href = '/pages/menu_aluno/';
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Erro no login:', err);
-      // No mock, o erro traz err.payload.message; em fetch pode ser err.message
+      
       const msg = err?.payload?.message || err?.message || 'Falha ao conectar ao servidor.';
       setMessage(msg, true);
     }

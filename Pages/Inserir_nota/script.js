@@ -1,4 +1,4 @@
-// script.js - Inserir Nota (integra com global.js)
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('notaForm');
   if (!form) return console.warn('#notaForm não encontrado');
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return noAcc.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').toUpperCase();
   }
 
-  // garante coleção 'notas' no mock para evitar "Recurso não encontrado"
+  
   function ensureMockCollectionsExist(names = []) {
     try {
       if (typeof API === 'undefined' || typeof API.getMockDb !== 'function') return;
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // submit
+  
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     showMessage('');
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cpf = onlyDigits(matriculaRaw);
     const disciplina = sanitize(disciplinaInput.value);
     let notaRaw = sanitize(String(notaInput.value || ''));
-    // aceita vírgula decimal
+    
     notaRaw = notaRaw.replace(',', '.');
     const nota = parseFloat(notaRaw);
 
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!notaRaw || Number.isNaN(nota)) { showMessage('Informe uma nota válida.', true); notaInput.focus(); return; }
     if (!(nota >= 0 && nota <= 10)) { showMessage('Nota fora do intervalo (0 — 10).', true); notaInput.focus(); return; }
 
-    // monta payload; usamos id composto para chave no mock (cpf + disciplina)
+    
     const disciplinaCode = codeFromName(disciplina);
     const id = `${cpf}_${disciplinaCode}`;
 
@@ -78,21 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (typeof API === 'undefined') throw new Error('API global não encontrada. Verifique se global.js foi carregado antes deste script.');
 
-      // garantir coleção no mock
+      
       ensureMockCollectionsExist(['notas']);
 
       const notasSvc = API.notas || API.resource('notas');
 
-      // tenta criar (POST). Se backend usar outra estratégia, ajustar.
+      
       const created = await notasSvc.create(payload);
 
       showMessage('Nota salva com sucesso.');
       console.log('Nota criada:', created);
 
-      // reset do form
+      
       form.reset();
 
-      // volta para página anterior após 1s
+      
       setTimeout(() => { try { window.history.back(); } catch (e) { window.location.href = '/'; } }, 1000);
 
     } catch (err) {
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = err?.payload?.message || err?.message || 'Erro ao salvar nota';
       showMessage(text, true);
 
-      // se erro for "Recurso não encontrado" tentamos criar coleção e repetir uma vez
+      
       if (String(text).toLowerCase().includes('recurso não encontrado')) {
         try {
           ensureMockCollectionsExist(['notas']);

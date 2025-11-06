@@ -1,4 +1,4 @@
-// script.js - Inserir Disciplina (integra com global.js)
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('disciplinaForm');
   const discInput = document.getElementById('disciplina');
@@ -23,14 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return v == null ? '' : String(v).trim();
   }
 
-  // gera código amigável a partir do nome (sem acentos, espaços -> _ , maiúsculo)
+  
   function codeFromName(name) {
     if (!name) return '';
     const noAcc = String(name).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     return noAcc.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
   }
 
-  // se mock presente cria coleções necessárias para evitar "Recurso não encontrado"
+  
   function ensureMockCollectionsExist(names = []) {
     try {
       if (typeof API === 'undefined' || typeof API.getMockDb !== 'function') return;
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // upsert: tenta POST, se 409 faz PUT
+  
   async function upsertDisciplina(payload) {
     const svc = (typeof API !== 'undefined') ? (API.disciplinas || API.resource('disciplinas')) : null;
     if (!svc) throw new Error('Serviço de disciplinas (API.disciplinas) não disponível');
@@ -60,12 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       return await svc.create(payload);
     } catch (err) {
-      // se já existe (409) faz PUT
+      
       if (err && err.status === 409) {
         const codigo = payload.codigo;
         return await svc.update(encodeURIComponent(codigo), payload);
       }
-      // propaga outros erros (inclui "Recurso não encontrado" do mock)
+      
       throw err;
     }
   }
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // prepara payload com nome, codigo e carga_horaria (campo que mock/back espera)
+    
     const codigo = codeFromName(nome);
     const payload = {
       codigo: codigo,
@@ -102,12 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
       carga_horaria: carga
     };
 
-    // desabilita botão
+    
     submitBtn.disabled = true;
     submitBtn.textContent = 'Salvando...';
 
     try {
-      // garante coleções no mock (se estiver em modo teste)
+      
       ensureMockCollectionsExist(['disciplinas']);
 
       const result = await upsertDisciplina(payload);
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showMessage('Disciplina salva com sucesso.');
       console.log('Disciplina result:', result);
 
-      // aguarda 1s e volta
+      
       setTimeout(() => {
         try { window.history.back(); } catch (e) { window.location.href = '/'; }
       }, 1000);
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = err?.payload?.message || err?.message || 'Erro ao salvar disciplina';
       showMessage(text, true);
 
-      // caso seja "Recurso não encontrado" no mock, tenta criar coleção e repetir uma vez
+      
       if (String(text).toLowerCase().includes('recurso não encontrado')) {
         try {
           ensureMockCollectionsExist(['disciplinas']);
