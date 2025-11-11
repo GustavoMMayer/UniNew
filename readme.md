@@ -64,6 +64,112 @@ Feito isso, o novo usuário terá acesso ao sistema.
 > ⚠️ Como esta é uma **versão beta**, alguns usuários já foram **pré-cadastrados** no sistema, e **funcionários/gerentes** só podem ser cadastrados **via código**.
 
 ---
+## 🗂 Estrutura do Projeto
+
+```
+UniNew/
+│
+├── Assets/
+│   └── Images/
+│       └── Logo.png
+│
+├── Js/
+│   └── global.js
+│
+├── Styles/
+│   └── global.css
+│
+├── Pages/
+│   ├── Cadastro/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Excluir_usuario/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Gerencia/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Inserir_aluno/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Inserir_disciplina/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Inserir_docente/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Inserir_fornecedor/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Inserir_nota/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Inserir_pessoa/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Login/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Nota_aluno/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Inserir_curso/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Menu_adm/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Menu_aluno/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   ├── Menu_docente/
+│   │   ├── index.html
+│   │   ├── script.js
+│   │   └── style.css
+│
+│   └── Usuarios/
+│       ├── index.html
+│       ├── script.js
+│       └── style.css
+│
+├── Backend/
+│   ├── database/
+│   ├── controllers/
+│   ├── models/
+│
+├── index.html
+│
+└── README.md
+```
+---
 
 ### 🔑 Logins pré-carregados:
 
