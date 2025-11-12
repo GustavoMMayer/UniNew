@@ -36,7 +36,7 @@ Durante o desenvolvimento, o foco foi em manter a **usabilidade e clareza da nav
 
 ### Revisitar o projeto e definir a prova de conceito
 Na primeira fase do projeto **não foram identificados pontos de ajustes** pela banca.  
-Durante a execução final, realizamos **pequenos ajustes em telas** e fluxos para tornar o sistema mais funcional e intuitivo.
+Durante a execução final, realizamos **pequenos ajustes em telas**, **ajustamos o rodapé** que antes era uma *onda* passou a ser uma *caixa*, o novo formato foi escolhido por se adaptar em qualquer tipo de tela mantendo a **flexibilidade** da aplicação e também foram feitas alterações nos fluxos para tornar o sistema mais funcional e intuitivo.
 
 ### Preparação do ambiente de desenvolvimento
 Optamos por utilizar tecnologias simples e diretas para garantir portabilidade e fácil manutenção:
