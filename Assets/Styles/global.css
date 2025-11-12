@@ -36,14 +36,14 @@ html, body {
 
 body {
     font-family: Arial, sans-serif; 
-    
-    
     background-color: var(--color-primary-light);
     color: var(--color-text-dark);
-    
-    
     position: relative;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
 }
 
 
@@ -51,13 +51,16 @@ body {
     width: 100%;
     max-width: 450px; 
     margin: 0 auto;
-    padding: 20px;
+    padding: clamp(1rem, 2vw, 2rem);
     padding-bottom: 2%; 
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 
 .app-header {
-    margin-bottom: 30px;
+    margin-bottom: clamp(1.5rem, 3vw, 3rem);
     padding-top: 15px;
     width: 100%;
     display: flex;
@@ -66,24 +69,24 @@ body {
 }
 
 .logo-text {
-    font-size: 3.5rem; 
+    font-size: clamp(2.5rem, 5vw, 3.5rem); 
     color: var(--color-primary-medium); 
     font-weight: bold;
     margin-bottom: -15px;
     z-index: 10;
-    
 }
 
 .logo-image {
   --circle-size: 60%;        
   position: relative;
-  display: inline-block;
-  width: 30%; 
-  margin-left:50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: clamp(100px, 30%, 150px);
+  margin-left: 50%;
   line-height: 0; 
   vertical-align: middle;
 }
-
 
 .logo-image img {
   display: block;
@@ -93,7 +96,6 @@ body {
   z-index: 30; 
   pointer-events: none;
 }
-
 
 #circle-dark,
 #circle-light {
@@ -106,7 +108,6 @@ body {
   box-shadow: 0 6px 18px rgba(2,6,23,0.25); 
 }
 
-
 #circle-dark {
   background: var(--color-circle-dark); 
   opacity: 70%;
@@ -116,7 +117,6 @@ body {
   z-index: 12;
 }
 
-
 #circle-light {
   background: var(--color-circle-light); 
   right: 6%;
@@ -124,7 +124,6 @@ body {
   transform: translateY(-50%);
   z-index: 1;
 }
-
 
 .logo-image::after {
   content: "";
@@ -134,7 +133,6 @@ body {
   border-radius: 50%;
   background: var(--overlap-color);
   z-index: 11; 
-  
   right: 1%;
   top: 42%;
   transform: translateY(-50%);
@@ -143,14 +141,20 @@ body {
   pointer-events: none;
 }
 
-
 .form-container {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.75rem, 2vw, 1rem);
 }
 
 .input-group {
     width: 100%;
     margin-bottom: 15px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .input-group label {
@@ -158,6 +162,7 @@ body {
     font-weight: bold;
     margin-bottom: 5px;
     color: var(--color-text-dark);
+    font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
 input[type="text"],
@@ -166,10 +171,10 @@ input[type="email"],
 input[type="tel"],
 input[type="number"] {
     width: 100%;
-    padding: 16px;
+    padding: clamp(0.75rem, 1.5vw, 1rem);
     border-radius: 10px;
     border: none;
-    font-size: 1rem;
+    font-size: clamp(1rem, 2vw, 1.1rem);
     background-color: var(--color-text-light);
     color: var(--color-text-dark);
 }
@@ -177,10 +182,10 @@ input[type="number"] {
 
 .btn {
     width: 100%;
-    padding: 16px;
+    padding: clamp(0.75rem, 2vw, 1rem);
     border: none;
     border-radius: 10px;
-    font-size: 1.1rem;
+    font-size: clamp(1rem, 2vw, 1.1rem);
     font-weight: bold;
     color: var(--color-text-light);
     cursor: pointer;
@@ -218,29 +223,27 @@ input[type="number"] {
 }
 
 footer {
-  position: fixed;
+  position: relative;
   bottom: 0;
   left: 0;
   width: 100%;
-
 }
+
 .footer-wave {
     background-color: var(--color-primary-medium);
     color: var(--color-text-light);
-    padding: 40px 30px 60px 30px;
-    text-align: left;
-    border-radius: 60% 60% 0 0 / 100px 100px 0 0;
-    position: static;
-    width: 100%;
+    padding: clamp(2rem, 4vw, 3rem) 30px clamp(3rem, 6vw, 4rem) 30px;
+    text-align: center;
+  
     margin-top: 32px; 
 }
 
 .footer-wave h2 {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
     font-weight: bold;
     text-transform: uppercase;
-    
 }
+
 .message {
     margin-top: 15px;
     font-weight: bold;
@@ -256,7 +259,6 @@ footer {
 }
 
 @media (max-width: 480px) {
-  
   .logo-image { width: 120px; margin-left: 60%; }
   #circle-dark { right: -10%; top: 56%; }
   #circle-light { right: 8%; top: 28%; }
