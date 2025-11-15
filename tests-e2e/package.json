@@ -1,0 +1,27 @@
+{
+  "name": "uninew-e2e-tests",
+  "version": "1.0.0",
+  "description": "Testes E2E para a API UniNew",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --verbose --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": ["e2e", "tests", "api"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "axios": "^1.6.0",
+    "@types/jest": "^29.5.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 10000,
+    "verbose": true,
+    "collectCoverageFrom": [
+      "tests/**/*.js"
+    ]
+  }
+}

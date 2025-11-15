@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Serviço do MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: uninew-mysql
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: uninew_db
+      MYSQL_USER: uninew_user
+      MYSQL_PASSWORD: uninew_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - uninew-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Serviço do Backend (Node.js)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: uninew-backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: uninew_user
+      DB_PASSWORD: uninew_pass
+      DB_NAME: uninew_db
+      JWT_SECRET: seu_jwt_secret_aqui_mude_em_producao
+      JWT_EXPIRES_IN: 24h
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - uninew-network
+    command: npm run dev
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  uninew-network:
+    driver: bridge
