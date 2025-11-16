@@ -1,5 +1,4 @@
 const BaseRepository = require('./base.repository');
-const mockData = require('../mocks/data');
 
 class DocentesRepository extends BaseRepository {
   constructor() {
