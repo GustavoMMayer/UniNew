@@ -28,4 +28,22 @@ body {
     text-decoration: underline;
 }
 
+/* Mensagens de feedback */
+.message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+.message.error {
+    background-color: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.message.success {
+    background-color: rgba(6, 78, 59, 0.1);
+    border: 1px solid rgba(6, 78, 59, 0.3);
+}
 

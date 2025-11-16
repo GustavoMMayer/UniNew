@@ -8,6 +8,17 @@
     margin-bottom: 10px;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-name {
+    color: var(--color-text-dark);
+    font-weight: 600;
+    font-size: 1rem;
+}
 
 .logout-link {
     color: var(--color-text-dark);

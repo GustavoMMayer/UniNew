@@ -23,16 +23,40 @@
             <form id="alunoForm">
                 <div class="input-group">
                     <label for="cpf">CPF</label>
-                    <input type="text" id="cpf" name="cpf">
+                    <input type="text" id="cpf" name="cpf" placeholder="Apenas números (11 dígitos)">
+                </div>
+                <div class="input-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" name="nome">
+                </div>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                <div class="input-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" name="telefone">
+                </div>
+                <div class="input-group">
+                    <label for="senha">Senha (apenas para novo aluno)</label>
+                    <input type="password" id="senha" name="senha" placeholder="Mínimo 6 caracteres">
                 </div>
                 <div class="input-group">
                     <label for="curso">Curso</label>
-                    <input type="text" id="curso" name="curso">
+                    <select id="curso" name="curso">
+                        <option value="">Selecione...</option>
+                        <option value="ADS">Análise e Desenvolvimento de Sistemas</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Administração">Administração</option>
+                    </select>
                 </div>
-                
                 <div class="input-group">
                     <label for="situacao">Situação Acadêmica</label>
-                    <input type="text" id="situacao" name="situacao">
+                    <select id="situacao" name="situacao">
+                        <option value="">Selecione...</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
                 </div>
 
                 <button type="submit" class="btn btn-green">SALVAR</button>

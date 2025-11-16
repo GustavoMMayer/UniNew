@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { testConnection } = require('./config/database');
+const logger = require('./middlewares/logger.middleware');
 
 const authRoutes = require('./routes/auth.routes');
 const usuariosRoutes = require('./routes/usuarios.routes');
@@ -17,6 +18,9 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Middleware de logging centralizado
+app.use(logger);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);

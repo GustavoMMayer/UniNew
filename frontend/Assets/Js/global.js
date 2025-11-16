@@ -7,7 +7,7 @@
 */
 
 // --- MODO DE TESTE ---
-const MODO_TESTE = true;
+const MODO_TESTE = false;
 // ----------------------
 
 (function (window) {
@@ -181,7 +181,7 @@ const MODO_TESTE = true;
 
  
   const API = {
-    baseUrl: '/api',
+    baseUrl: 'http://localhost:3000/api',
 
    
     async request(method, endpoint, data=null, extraHeaders={}) {
@@ -247,8 +247,13 @@ const MODO_TESTE = true;
 
     
     async login(credentials) {
+      // Normalizar credenciais para formato do backend (username/password)
+      const loginPayload = {
+        username: credentials.username || credentials.email || credentials.cpf,
+        password: credentials.password || credentials.senha
+      };
       
-      const resp = await this.post('/auth/login', credentials);
+      const resp = await this.post('/auth/login', loginPayload);
       if (resp && resp.usuario) {
         const payload = Object.assign({}, resp.usuario);
         if (resp.token) payload.token = resp.token;

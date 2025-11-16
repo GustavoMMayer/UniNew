@@ -106,40 +106,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) { /* ignore */ }
 
     try {
+      // Buscar notas do aluno usando o endpoint específico /api/notas/aluno/:cpf
+      let notas = [];
       
-      const notasSvc = (typeof API !== 'undefined' && API.notas) ? API.notas : (typeof API !== 'undefined' ? API.resource('notas') : null);
-      if (!notasSvc) {
-        setError('Serviço de notas não disponível (API.notas ausente).');
+      if (typeof API !== 'undefined') {
+        // Usar o endpoint correto do backend: GET /api/notas/aluno/:cpf
+        const response = await API.get(`/notas/aluno/${encodeURIComponent(chave)}`, null, API.authHeaders());
+        notas = Array.isArray(response) ? response : [];
+      } else {
+        setError('API não disponível.');
         return;
       }
 
       
-      let notas = [];
-      try {
-        notas = await notasSvc.list({ cpf: chave });
-      } catch (errList) {
-        d
-        try {
-          const single = await notasSvc.getById(encodeURIComponent(chave));
-          if (single) notas = Array.isArray(single) ? single : [single];
-        } catch (e2) {
-         
-          throw errList;
-        }
-      }
-
-      
       const normalized = (Array.isArray(notas) ? notas : []).map(n => ({
-        disciplina: n.disciplina || n.disciplina_nome || n.disciplinaCodigo || n.disciplina_codigo || n.disciplina_nome || '',
-        nota: (n.nota != null) ? n.nota : (n.grade || n.pontuacao || ''),
-        desc: n.descricao || n.desc || n.observacao || ''
+        disciplina: n.disciplina || n.disciplina_nome || n.disciplina_codigo || '',
+        nota: (n.nota != null) ? n.nota : '',
+        desc: n.descricao || n.observacao || ''
       }));
 
       renderItems(normalized, alunoNome);
 
     } catch (err) {
       console.error('Erro buscando notas:', err);
-      const text = err?.payload?.message || err?.message || 'Erro ao buscar notas';
+      const text = err?.payload?.error || err?.payload?.message || err?.message || 'Erro ao buscar notas';
       setError(text);
     }
   }

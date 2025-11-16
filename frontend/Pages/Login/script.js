@@ -27,21 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setMessage('Verificando login...');
 
-    
-    let credentialsToSend;
-    if (typeof MODO_TESTE !== 'undefined' && MODO_TESTE) {
-      
-      if (login.includes('@')) {
-        credentialsToSend = { email: login, senha: senha };
-      } else {
-        
-        const onlyDigits = login.replace(/\D/g, '');
-        credentialsToSend = { cpf: onlyDigits, senha: senha };
-      }
-    } else {
-      
-      credentialsToSend = { username: login, password: senha };
-    }
+    // O backend aceita CPF ou email no campo username
+    const credentialsToSend = { 
+      username: login, 
+      password: senha 
+    };
 
     try {
       
@@ -82,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Erro no login:', err);
-      
-      const msg = err?.payload?.message || err?.message || 'Falha ao conectar ao servidor.';
+      // Backend retorna { error: "msg" } ou { message: "msg" }
+      const msg = err?.payload?.error || err?.payload?.message || err?.message || 'Falha ao conectar ao servidor.';
       setMessage(msg, true);
     }
   });
