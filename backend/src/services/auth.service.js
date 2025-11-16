@@ -1,7 +1,5 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const usuariosRepository = require('../repositories/usuarios.repository');
-const jwtConfig = require('../config/jwt');
 
 class AuthService {
   async login(username, password) {
@@ -15,20 +13,9 @@ class AuthService {
       throw new Error('Credenciais inválidas');
     }
     
-    const token = jwt.sign(
-      { 
-        cpf: usuario.cpf, 
-        tipo_conta: usuario.tipo_conta,
-        email: usuario.email
-      }, 
-      jwtConfig.secret,
-      { expiresIn: jwtConfig.expiresIn }
-    );
-    
     const { senha, ...usuarioSemSenha } = usuario;
     
     return {
-      token,
       usuario: usuarioSemSenha
     };
   }

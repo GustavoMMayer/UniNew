@@ -25,7 +25,7 @@ const createUsuarioSchema = Joi.object({
   }),
   // Campos opcionais para aluno
   curso: Joi.string().allow('', null),
-  situacao: Joi.string().valid('Ativo', 'Inativo').allow('', null),
+  situacao: Joi.string().allow('', null),
   // Campos opcionais para docente
   grau_academico: Joi.string().allow('', null),
   disciplina: Joi.string().allow('', null),
@@ -37,7 +37,7 @@ const updateUsuarioSchema = Joi.object({
   email: Joi.string().email(),
   telefone: Joi.string().allow('', null),
   curso: Joi.string().allow('', null),
-  situacao: Joi.string().valid('Ativo', 'Inativo').allow('', null),
+  situacao: Joi.string().allow('', null),
   grau_academico: Joi.string().allow('', null),
   disciplina: Joi.string().allow('', null),
   carga_horaria: Joi.number().integer().min(0).allow(null)
