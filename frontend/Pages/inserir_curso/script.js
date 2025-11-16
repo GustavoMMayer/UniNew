@@ -1,6 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const courseInput = document.getElementById('courseName');
+  const discCodeInput = document.getElementById('disciplineCodeInput');
   const discInput = document.getElementById('disciplineInput');
   const addBtn = document.getElementById('addBtn');
   const removeSelectedBtn = document.getElementById('removeSelectedBtn');
@@ -10,23 +11,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const disciplines = [];
 
-  
-  const CURSO_OPCOES = ['ADS', 'Marketing', 'Administração'];
+  // Verificar autenticação e permissão
+  const usuario = API.getUsuarioLogado();
+  if (!usuario) {
+    showMessage('Você precisa estar logado para acessar esta página.', 'error');
+    setTimeout(() => window.location.href = '../Login/', 2000);
+    return;
+  }
 
-  (function createCourseDatalist(){
-    let dl = document.getElementById('course-options-datalist');
-    if (!dl) {
-      dl = document.createElement('datalist');
-      dl.id = 'course-options-datalist';
-      CURSO_OPCOES.forEach(c => {
-        const o = document.createElement('option');
-        o.value = c;
-        dl.appendChild(o);
-      });
-      document.body.appendChild(dl);
-    }
-    if (courseInput) courseInput.setAttribute('list', dl.id);
-  })();
+  const tipo = (usuario.tipo_conta || '').toLowerCase();
+  if (tipo !== 'funcionario' && tipo !== 'gerente') {
+    showMessage('Apenas funcionários e gerentes podem criar cursos.', 'error');
+    setTimeout(() => window.history.back(), 2000);
+    return;
+  }
 
   function sanitize(str){
     if (str === null || str === undefined) return '';
@@ -57,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const name = document.createElement('div');
       name.className = 'item-name';
-      name.textContent = d.name;
+      name.textContent = d.codigo ? `${d.codigo} - ${d.name}` : d.name;
 
       const removeBtn = document.createElement('button');
       removeBtn.className = 'item-remove';
@@ -72,15 +70,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function addDiscipline(name) {
-    const clean = sanitize(name);
-    if (!clean) { showMessage('Informe o nome da disciplina.', 'error'); return; }
-    const exists = disciplines.some(d => d.name.toLowerCase() === clean.toLowerCase());
-    if (exists) { showMessage('Disciplina já adicionada.', 'error'); return; }
-    disciplines.push({ name: clean, checked: false });
+  function addDiscipline(codigo, name) {
+    const cleanCode = sanitize(codigo).toUpperCase();
+    const cleanName = sanitize(name);
+    if (!cleanCode) { showMessage('Informe o código da disciplina.', 'error'); return; }
+    if (!cleanName) { showMessage('Informe o nome da disciplina.', 'error'); return; }
+    const exists = disciplines.some(d => d.codigo.toLowerCase() === cleanCode.toLowerCase());
+    if (exists) { showMessage('Disciplina com este código já adicionada.', 'error'); return; }
+    disciplines.push({ codigo: cleanCode, name: cleanName, checked: false });
     render();
+    discCodeInput.value = '';
     discInput.value = '';
-    discInput.focus();
+    discCodeInput.focus();
     hideMessageAfter();
   }
 
@@ -110,55 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   
-  function ensureMockCollectionsExist(names = []) {
-    try {
-      if (typeof API === 'undefined' || typeof API.getMockDb !== 'function') return;
-      const mock = API.getMockDb();
-      if (!mock) return;
-      let changed = false;
-      names.forEach(n => {
-        if (!Array.isArray(mock[n])) {
-          mock[n] = [];
-          changed = true;
-        }
-      });
-      if (changed) {
-        
-        localStorage.setItem('mock_db_v1', JSON.stringify(mock));
-        console.log('[script] mock_db_v1 atualizado com coleções:', names);
-      }
-    } catch (e) {
-      console.warn('[script] falha ao garantir coleções no mock:', e);
-    }
-  }
-
-  
-  async function upsertDiscipline(discPayload) {
-    const svc = API.disciplinas || API.resource('disciplinas');
-    try {
-      return await svc.create(discPayload);
-    } catch (err) {
-      if (err && err.status === 409) {
-        
-        const code = discPayload.codigo || codeFromName(discPayload.nome);
-        return await svc.update(encodeURIComponent(code), discPayload);
-      }
-      
-      throw err;
-    }
-  }
-
-  
   async function save() {
     hideMessage();
     const courseName = sanitize(courseInput.value);
-    if (!courseName) { showMessage('Informe o nome do curso antes de salvar.', 'error'); return; }
-    if (disciplines.length === 0) { showMessage('Adicione ao menos uma disciplina antes de salvar.', 'error'); return; }
-
-    
-    const okCurso = CURSO_OPCOES.some(c => c.toLowerCase() === courseName.toLowerCase());
-    if (!okCurso) {
-      showMessage(`Curso inválido. Opções: ${CURSO_OPCOES.join(', ')}.`, 'error');
+    if (!courseName) {
+      showMessage('Informe o nome do curso antes de salvar.', 'error');
+      return;
+    }
+    if (disciplines.length === 0) {
+      showMessage('Adicione ao menos uma disciplina antes de salvar.', 'error');
       return;
     }
 
@@ -166,74 +127,70 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.textContent = 'Salvando...';
 
     try {
-      if (typeof API === 'undefined') throw new Error('API global não encontrado. Verifique se global.js foi carregado antes.');
+      if (typeof API === 'undefined') {
+        throw new Error('API global não encontrado.');
+      }
 
-      
-      ensureMockCollectionsExist(['disciplinas', 'cursos']);
-
-      const disciplinasSvc = API.disciplinas || API.resource('disciplinas');
-      const cursosSvc = API.cursos || API.resource('cursos');
-
-      
+      // 1. Criar/atualizar disciplinas primeiro
       const createdDiscs = [];
       for (const d of disciplines) {
-        const discCode = codeFromName(d.name);
-        const discPayload = { codigo: discCode, nome: d.name, carga_horaria: d.carga_horaria || 60 };
+        const discPayload = {
+          codigo: d.codigo,
+          nome: d.name,
+          carga_horaria: d.carga_horaria || 60
+        };
+
         try {
-          const created = await upsertDiscipline(discPayload);
+          // Tentar criar disciplina
+          const created = await API.post('/disciplinas', discPayload, API.authHeaders());
           createdDiscs.push(created);
         } catch (err) {
-          
-          if (err && err.payload && (String(err.payload.message).toLowerCase().includes('recurso não encontrado') || String(err.message).toLowerCase().includes('recurso não encontrado'))) {
-            
-            try {
-              ensureMockCollectionsExist(['disciplinas', 'cursos']);
-              const created2 = await upsertDiscipline(discPayload);
-              createdDiscs.push(created2);
-            } catch (err2) {
-              throw err2;
-            }
+          // Se já existe (409), atualizar
+          if (err?.status === 409) {
+            const updated = await API.put(`/disciplinas/${d.codigo}`, discPayload, API.authHeaders());
+            createdDiscs.push(updated);
           } else {
             throw err;
           }
         }
       }
 
-      
+      // 2. Criar/atualizar curso
       const courseCode = codeFromName(courseName);
       const coursePayload = {
         codigo: courseCode,
         nome: courseName,
-        disciplinas: createdDiscs.map(cd => (cd.codigo || cd.nome || codeFromName(cd.nome || cd)))
+        disciplinas: createdDiscs.map(cd => cd.codigo)
       };
 
       let courseResult = null;
       try {
-        courseResult = await cursosSvc.create(coursePayload);
+        // Tentar criar curso
+        courseResult = await API.post('/cursos', coursePayload, API.authHeaders());
       } catch (errCourse) {
-        if (errCourse && errCourse.status === 409) {
-          courseResult = await cursosSvc.update(encodeURIComponent(courseCode), coursePayload);
-        } else if (errCourse && (String(errCourse.message).toLowerCase().includes('recurso não encontrado') || (errCourse.payload && String(errCourse.payload.message).toLowerCase().includes('recurso não encontrado')))) {
-          
-          ensureMockCollectionsExist(['cursos']);
-          courseResult = await cursosSvc.create(coursePayload);
+        // Se já existe (409), atualizar
+        if (errCourse?.status === 409) {
+          courseResult = await API.put(`/cursos/${courseCode}`, coursePayload, API.authHeaders());
         } else {
           throw errCourse;
         }
       }
 
-      
       showMessage('Curso e disciplinas salvos com sucesso.');
       console.log('Curso salvo:', courseResult);
       hideMessageAfter(1200);
 
       setTimeout(() => {
-        try { window.history.back(); } catch (e) { window.location.href = '/'; }
+        try {
+          window.history.back();
+        } catch (e) {
+          window.location.href = '/';
+        }
       }, 1000);
 
     } catch (err) {
       console.error('Erro ao salvar curso/disciplinas:', err);
-      const msg = err?.payload?.message || err?.message || 'Erro ao salvar';
+      const msg = err?.payload?.error || err?.payload?.message || err?.message || 'Erro ao salvar';
       showMessage(msg, 'error');
       hideMessageAfter(4000);
     } finally {
@@ -243,14 +200,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   
-  addBtn.addEventListener('click', () => addDiscipline(discInput.value));
+  addBtn.addEventListener('click', () => addDiscipline(discCodeInput.value, discInput.value));
   removeSelectedBtn.addEventListener('click', removeSelected);
   saveBtn.addEventListener('click', save);
 
   discInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addDiscipline(discInput.value);
+      addDiscipline(discCodeInput.value, discInput.value);
+    }
+  });
+
+  discCodeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      discInput.focus();
     }
   });
 
