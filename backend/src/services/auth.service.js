@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const usuariosRepository = require('../repositories/usuarios.repository');
 
 class AuthService {
@@ -15,7 +16,19 @@ class AuthService {
     
     const { senha, ...usuarioSemSenha } = usuario;
     
+    // Gerar token JWT
+    const token = jwt.sign(
+      { 
+        cpf: usuario.cpf,
+        tipo_conta: usuario.tipo_conta,
+        email: usuario.email
+      },
+      process.env.JWT_SECRET || 'secret-key-dev',
+      { expiresIn: '24h' }
+    );
+    
     return {
+      token,
       usuario: usuarioSemSenha
     };
   }
@@ -26,3 +39,4 @@ class AuthService {
 }
 
 module.exports = new AuthService();
+

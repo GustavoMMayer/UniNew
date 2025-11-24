@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS fornecedores (
 
 -- Tabela de cursos
 CREATE TABLE IF NOT EXISTS cursos (
-  codigo VARCHAR(50) PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   nome VARCHAR(255) UNIQUE NOT NULL,
   disciplinas JSON,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -53,11 +53,19 @@ CREATE TABLE IF NOT EXISTS cursos (
 
 -- Tabela de disciplinas
 CREATE TABLE IF NOT EXISTS disciplinas (
-  codigo VARCHAR(50) PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   nome VARCHAR(255) UNIQUE NOT NULL,
   carga_horaria INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabela de graus acadêmicos
+CREATE TABLE IF NOT EXISTS graus_academicos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) UNIQUE NOT NULL,
+  ordem INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabela de notas
@@ -65,37 +73,49 @@ CREATE TABLE IF NOT EXISTS notas (
   id VARCHAR(100) PRIMARY KEY,
   cpf VARCHAR(11) NOT NULL,
   disciplina VARCHAR(255) NOT NULL,
-  disciplina_codigo VARCHAR(50) NOT NULL,
+  disciplina_id INT NOT NULL,
   nota DECIMAL(4,2) NOT NULL CHECK (nota >= 0 AND nota <= 10),
   descricao TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (cpf) REFERENCES usuarios(cpf) ON DELETE CASCADE,
-  FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo)
+  FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Inserir dados iniciais (seed)
 
 -- Cursos
-INSERT INTO cursos (codigo, nome, disciplinas) VALUES
-('ADS', 'Análise e Desenvolvimento de Sistemas', JSON_ARRAY('ALG', 'LPG')),
-('MKT', 'Marketing', JSON_ARRAY()),
-('ADM', 'Administração', JSON_ARRAY())
-ON DUPLICATE KEY UPDATE codigo=codigo;
+INSERT INTO cursos (nome, disciplinas) VALUES
+('Análise e Desenvolvimento de Sistemas', JSON_ARRAY(1, 2)),
+('Marketing', JSON_ARRAY()),
+('Administração', JSON_ARRAY())
+ON DUPLICATE KEY UPDATE nome=nome;
 
 -- Disciplinas
-INSERT INTO disciplinas (codigo, nome, carga_horaria) VALUES
-('ALG', 'Algoritmos', 60),
-('LPG', 'Linguagem de Programação', 60),
-('ESD', 'Estruturas de Dados', 80),
-('BDD', 'Banco de Dados', 60),
-('WEB', 'Desenvolvimento Web', 80)
-ON DUPLICATE KEY UPDATE codigo=codigo;
+INSERT INTO disciplinas (nome, carga_horaria) VALUES
+('Algoritmos', 60),
+('Linguagem de Programação', 60),
+('Estruturas de Dados', 80),
+('Banco de Dados', 60),
+('Desenvolvimento Web', 80)
+ON DUPLICATE KEY UPDATE nome=nome;
+
+-- Graus Acadêmicos
+INSERT INTO graus_academicos (nome, ordem) VALUES
+('Graduação', 1),
+('Especialização', 2),
+('MBA', 3),
+('Mestrado', 4),
+('Doutorado', 5),
+('Pós-Doutorado', 6),
+('Livre-Docência', 7),
+('Notório Saber', 8)
+ON DUPLICATE KEY UPDATE nome=nome;
 
 -- Usuários (senha: senha123 - hash bcrypt)
 -- Senha hash gerada com bcrypt rounds=10 para "senha123"
 INSERT INTO usuarios (cpf, nome, email, telefone, senha, tipo_conta, tipo_conta_id, curso, situacao) VALUES
-('11111111111', 'Aluno Teste', 'aluno@teste.com', '0000-0001', '$2b$10$ku7qXvU9YZBojk0E7XvO9O.PwyU/Heo9uEiZ4MN9MHLbYA5LLyxPi', 'aluno', 1, 'ADS', 'Ativo')
+('11111111111', 'Aluno Teste', 'aluno@teste.com', '0000-0001', '$2b$10$ku7qXvU9YZBojk0E7XvO9O.PwyU/Heo9uEiZ4MN9MHLbYA5LLyxPi', 'aluno', 1, 'Análise e Desenvolvimento de Sistemas', 'Ativo')
 ON DUPLICATE KEY UPDATE cpf=cpf;
 
 INSERT INTO usuarios (cpf, nome, email, telefone, senha, tipo_conta, tipo_conta_id, grau_academico, disciplina, carga_horaria) VALUES
@@ -114,4 +134,4 @@ ON DUPLICATE KEY UPDATE cpf=cpf;
 CREATE INDEX idx_usuarios_email ON usuarios(email);
 CREATE INDEX idx_usuarios_tipo_conta ON usuarios(tipo_conta);
 CREATE INDEX idx_notas_cpf ON notas(cpf);
-CREATE INDEX idx_notas_disciplina_codigo ON notas(disciplina_codigo);
+CREATE INDEX idx_notas_disciplina_id ON notas(disciplina_id);

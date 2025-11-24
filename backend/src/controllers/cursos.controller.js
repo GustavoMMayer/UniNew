@@ -10,9 +10,9 @@ const listarCursos = async (req, res) => {
   }
 };
 
-const buscarCursoPorCodigo = async (req, res) => {
+const buscarCursoPorId = async (req, res) => {
   try {
-    const curso = await cursosService.buscarPorCodigo(req.params.codigo);
+    const curso = await cursosService.buscarPorId(req.params.id);
     if (!curso) {
       return res.status(404).json({ error: 'Curso não encontrado' });
     }
@@ -33,7 +33,7 @@ const criarCurso = async (req, res) => {
 
 const atualizarCurso = async (req, res) => {
   try {
-    const curso = await cursosService.atualizarCurso(req.params.codigo, req.body);
+    const curso = await cursosService.atualizarCurso(req.params.id, req.body);
     if (!curso) {
       return res.status(404).json({ error: 'Curso não encontrado' });
     }
@@ -45,7 +45,7 @@ const atualizarCurso = async (req, res) => {
 
 module.exports = {
   listarCursos,
-  buscarCursoPorCodigo,
+  buscarCursoPorId,
   criarCurso,
   atualizarCurso
 };

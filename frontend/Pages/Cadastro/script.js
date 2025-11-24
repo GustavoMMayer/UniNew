@@ -94,6 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   isAdminEditor = tipoUsuario === 'funcionario' || tipoUsuario === 'gerente' || tipoUsuario === 'adm' || tipoUsuario === 'administrador';
 
+  // Verificar se veio do link "Primeira Vez Por Aqui"
+  const urlParams = new URLSearchParams(window.location.search);
+  const isNewUser = urlParams.get('new') === 'true';
+
   if (btnEditar) {
     if (!usuario) {
       btnEditar.style.display = 'none';
@@ -103,7 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (usuario && !isAdminEditor) {
-    if (usuario[chaveField]) {
+    if (isNewUser) {
+      // Veio do link "Primeira Vez" - não carregar dados do usuário
+      chaveImutavel = false;
+      toggleInputs(true);
+      setMessage('Preencha os dados para criar um novo cadastro.');
+    } else if (usuario[chaveField]) {
+      // Acessou diretamente - carregar dados do usuário logado
       fillFormFromUser(usuario);
       chaveImutavel = true;
       toggleInputs(false);
@@ -193,16 +203,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const tipo = (u.tipo_conta || u.tipoConta || u.tipo || '').toString().toLowerCase();
       isAdminEditor = tipo === 'funcionario' || tipo === 'gerente' || tipo === 'adm' || tipo === 'administrador';
       if (btnEditar) btnEditar.style.display = '';
-      if (!isAdminEditor && u[chaveField]) {
-        fillFormFromUser(u);
-        chaveImutavel = true;
-        toggleInputs(false);
-        setMessage('Dados atualizados via login.');
-      } else {
-        form.reset();
-        chaveImutavel = false;
-        toggleInputs(true);
+      
+      // Sempre limpar o formulário quando entrar na tela de cadastro
+      form.reset();
+      chaveImutavel = false;
+      toggleInputs(true);
+      
+      if (isAdminEditor) {
         setMessage('Modo editor ativo: preencha o formulário para criar um novo registro ou informe CPF/CNPJ existente para atualizar.');
+      } else {
+        setMessage('Preencha os dados para criar um novo cadastro.');
       }
     }
   });

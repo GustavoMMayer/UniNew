@@ -5,15 +5,12 @@ class DisciplinasService {
     return await disciplinasRepository.findAll();
   }
 
-  async buscarPorCodigo(codigo) {
-    return await disciplinasRepository.findByCodigo(codigo);
+  async buscarPorId(id) {
+    return await disciplinasRepository.findById(id);
   }
 
   async criarDisciplina(dadosDisciplina) {
-    const codigo = dadosDisciplina.codigo || this._gerarCodigo(dadosDisciplina.nome);
-    
     const dadosCompletos = {
-      codigo: codigo,
       nome: dadosDisciplina.nome,
       carga_horaria: dadosDisciplina.carga_horaria
     };
@@ -21,24 +18,20 @@ class DisciplinasService {
     return await disciplinasRepository.create(dadosCompletos);
   }
 
-  async atualizarDisciplina(codigo, dadosAtualizacao) {
-    return await disciplinasRepository.update(codigo, dadosAtualizacao);
+  async atualizarDisciplina(id, dadosAtualizacao) {
+    return await disciplinasRepository.update(id, dadosAtualizacao);
   }
 
-  async excluirDisciplina(codigo) {
-    const disciplina = await disciplinasRepository.findByCodigo(codigo);
+  async excluirDisciplina(id) {
+    const disciplina = await disciplinasRepository.findById(id);
     if (!disciplina) return null;
     
-    await disciplinasRepository.delete(codigo);
+    await disciplinasRepository.delete(id);
     
     return {
-      codigo: disciplina.codigo,
+      id: disciplina.id,
       nome: disciplina.nome
     };
-  }
-
-  _gerarCodigo(nome) {
-    return nome.substring(0, 3).toUpperCase();
   }
 }
 

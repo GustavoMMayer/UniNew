@@ -9,9 +9,9 @@ class NotasRepository extends BaseRepository {
     let sql = 'SELECT * FROM notas';
     const params = [];
     
-    if (filters.disciplina_codigo) {
-      sql += ' WHERE disciplina_codigo = ?';
-      params.push(filters.disciplina_codigo);
+    if (filters.disciplina_id) {
+      sql += ' WHERE disciplina_id = ?';
+      params.push(filters.disciplina_id);
     }
     
     sql += ' ORDER BY created_at DESC';
@@ -31,14 +31,14 @@ class NotasRepository extends BaseRepository {
 
   async create(data) {
     const sql = `INSERT INTO notas 
-      (id, cpf, disciplina, disciplina_codigo, nota, descricao) 
+      (id, cpf, disciplina, disciplina_id, nota, descricao) 
       VALUES (?, ?, ?, ?, ?, ?)`;
     
     await this.query(sql, [
       data.id,
       data.cpf,
       data.disciplina,
-      data.disciplina_codigo,
+      data.disciplina_id,
       data.nota,
       data.descricao || null
     ]);

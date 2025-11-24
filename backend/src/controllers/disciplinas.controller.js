@@ -10,9 +10,9 @@ const listarDisciplinas = async (req, res) => {
   }
 };
 
-const buscarDisciplinaPorCodigo = async (req, res) => {
+const buscarDisciplinaPorId = async (req, res) => {
   try {
-    const disciplina = await disciplinasService.buscarPorCodigo(req.params.codigo);
+    const disciplina = await disciplinasService.buscarPorId(req.params.id);
     if (!disciplina) {
       return res.status(404).json({ error: 'Disciplina não encontrada' });
     }
@@ -35,7 +35,7 @@ const criarDisciplina = async (req, res) => {
 
 const atualizarDisciplina = async (req, res) => {
   try {
-    const disciplina = await disciplinasService.atualizarDisciplina(req.params.codigo, req.body);
+    const disciplina = await disciplinasService.atualizarDisciplina(req.params.id, req.body);
     if (!disciplina) {
       return res.status(404).json({ error: 'Disciplina não encontrada' });
     }
@@ -48,7 +48,7 @@ const atualizarDisciplina = async (req, res) => {
 
 module.exports = {
   listarDisciplinas,
-  buscarDisciplinaPorCodigo,
+  buscarDisciplinaPorId,
   criarDisciplina,
   atualizarDisciplina
 };

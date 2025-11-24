@@ -20,26 +20,40 @@
         </header>
 
         <main class="form-container">
-            <form id="alunoForm">
+            <form id="gerenciaForm">
                 <div class="input-group">
-                    <label for="pessoas">Pessoas</label>
-                    <input type="text" id="pessoas" name="pessoas">
+                    <label for="pessoas">Pessoas (Usuários)</label>
+                    <select id="pessoas" name="pessoas">
+                        <option value="">Selecione uma pessoa...</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="docentes">Docentes</label>
-                    <input type="text" id="docentes" name="docentes">
+                    <select id="docentes" name="docentes">
+                        <option value="">Selecione um docente...</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="fornecedores">Fornecedores</label>
-                    <input type="text" id="fornecedores" name="fornecedores">
+                    <select id="fornecedores" name="fornecedores">
+                        <option value="">Selecione um fornecedor...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="funcionarios">Funcionários</label>
+                    <select id="funcionarios" name="funcionarios">
+                        <option value="">Selecione um funcionário...</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="alunos">Alunos</label>
-                    <input type="text" id="alunos" name="alunos">
+                    <select id="alunos" name="alunos">
+                        <option value="">Selecione um aluno...</option>
+                    </select>
                 </div>
                 
 
-                <button type="submit" class="btn btn-red">EXCLUIR</button>
+                <button type="submit" class="btn btn-red">EXCLUIR SELECIONADOS</button>
             </form>
             
             <p id="message" class="message"></p>
@@ -50,6 +64,7 @@
         <h2>GERÊNCIA</h2>
     </footer>
 
+    <script src="/Assets/Js/global.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

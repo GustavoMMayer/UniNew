@@ -11,7 +11,9 @@ const createNotaSchema = Joi.object({
     'string.empty': 'Nome da disciplina é obrigatório',
     'any.required': 'Nome da disciplina é obrigatório'
   }),
-  disciplina_codigo: Joi.string().allow(''),
+  disciplina_id: Joi.number().integer().required().messages({
+    'any.required': 'ID da disciplina é obrigatório'
+  }),
   nota: Joi.number().min(0).max(10).precision(2).required().messages({
     'number.min': 'Nota deve ser entre 0 e 10',
     'number.max': 'Nota deve ser entre 0 e 10',
@@ -33,7 +35,7 @@ const updateNotaSchema = Joi.object({
 });
 
 const queryNotaSchema = Joi.object({
-  disciplina_codigo: Joi.string()
+  disciplina_id: Joi.number().integer()
 }).unknown(false);
 
 module.exports = {

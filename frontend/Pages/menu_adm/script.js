@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutButton = document.getElementById("logoutButton");
     const userNameEl = document.getElementById("userName");
     const btnExcluir = document.getElementById("excluir");
+    const btnFuncionario = document.getElementById("btnFuncionario");
 
-    // Verificar se o usuário está logado
     const usuario = API.getUsuarioLogado();
     
     if (!usuario) {
@@ -12,11 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Verificar se é funcionário ou gerente
     const tipo = (usuario.tipo_conta || usuario.tipoConta || usuario.tipo || '').toString().toLowerCase();
     if (tipo !== 'funcionario' && tipo !== 'gerente') {
         alert("Esta área é exclusiva para administradores.");
-        // Redirecionar para o menu correto
         if (tipo === 'aluno') {
             window.location.href = "../menu_aluno/";
         } else if (tipo === 'docente') {
@@ -27,17 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Exibir nome do usuário
     if (userNameEl) {
         userNameEl.textContent = usuario.nome || usuario.name || 'Administrador';
     }
 
-    // Controle de acesso: botão de excluir apenas para gerente
-    if (btnExcluir && tipo !== "gerente") {
-        btnExcluir.style.display = "none";
+    if (tipo !== "gerente") {
+        if (btnExcluir) btnExcluir.style.display = "none";
+        if (btnFuncionario) btnFuncionario.style.display = "none";
     }
 
-    // Logout
     if (logoutButton) {
         logoutButton.addEventListener("click", async (event) => {
             event.preventDefault();

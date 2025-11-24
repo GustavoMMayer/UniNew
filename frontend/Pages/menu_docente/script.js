@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutButton = document.getElementById("logoutButton");
     const userNameEl = document.getElementById("userName");
 
-    // Verificar se o usuário está logado
     const usuario = API.getUsuarioLogado();
     
     if (!usuario) {
@@ -11,11 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Verificar se é docente
     const tipo = (usuario.tipo_conta || usuario.tipoConta || usuario.tipo || '').toString().toLowerCase();
     if (tipo !== 'docente') {
         alert("Esta área é exclusiva para docentes.");
-        // Redirecionar para o menu correto
         if (tipo === 'aluno') {
             window.location.href = "../menu_aluno/";
         } else if (tipo === 'funcionario' || tipo === 'gerente') {
@@ -26,12 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Exibir nome do docente
     if (userNameEl) {
         userNameEl.textContent = usuario.nome || usuario.name || 'Docente';
     }
 
-    // Logout
     if (logoutButton) {
         logoutButton.addEventListener("click", async (event) => {
             event.preventDefault();

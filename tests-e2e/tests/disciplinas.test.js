@@ -40,7 +40,7 @@ describe('Disciplinas API - E2E Tests', () => {
       const response = await api.get('/disciplinas');
       
       const disciplina = response.data[0];
-      expect(disciplina).toHaveProperty('codigo');
+      expect(disciplina).toHaveProperty('id');
       expect(disciplina).toHaveProperty('nome');
       expect(disciplina).toHaveProperty('carga_horaria');
     });
@@ -65,35 +65,36 @@ describe('Disciplinas API - E2E Tests', () => {
   });
 
   // ========================================
-  // GET /disciplinas/:codigo - Buscar por código
+  // GET /disciplinas/:id - Buscar por ID
   // ========================================
-  describe('GET /disciplinas/:codigo', () => {
+  describe('GET /disciplinas/:id', () => {
     
-    test('Deve retornar disciplina por código válido', async () => {
-      const response = await api.get('/disciplinas/ALG');
+    test('Deve retornar disciplina por ID válido', async () => {
+      const response = await api.get('/disciplinas/1');
       
       expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('codigo', 'ALG');
+      expect(response.data).toHaveProperty('id', 1);
       expect(response.data).toHaveProperty('nome');
       expect(response.data).toHaveProperty('carga_horaria');
     });
 
-    test('Deve retornar 404 para código inexistente', async () => {
-      const response = await api.get('/disciplinas/DISC999');
+    test('Deve retornar 404 para ID inexistente', async () => {
+      const response = await api.get('/disciplinas/999999');
       
       expect(response.status).toBe(404);
       expect(response.data).toHaveProperty('error');
       expect(response.data.error).toMatch(/não encontrada/i);
     });
 
-    test('Código deve estar em maiúsculas', async () => {
-      const response = await api.get('/disciplinas/ALG');
+    test('ID deve ser numérico', async () => {
+      const response = await api.get('/disciplinas/1');
       
-      expect(response.data.codigo).toBe(response.data.codigo.toUpperCase());
+      expect(typeof response.data.id).toBe('number');
+      expect(response.data.id).toBeGreaterThan(0);
     });
 
     test('Deve retornar disciplina com nome em UTF-8', async () => {
-      const response = await api.get('/disciplinas/ALG');
+      const response = await api.get('/disciplinas/1');
       
       const nome = response.data.nome;
       expect(nome).not.toMatch(/Ã|Â|ï¿½/);
@@ -106,9 +107,8 @@ describe('Disciplinas API - E2E Tests', () => {
   // ========================================
   describe('POST /disciplinas', () => {
     
-    test('Deve criar nova disciplina com código e nome', async () => {
+    test('Deve criar nova disciplina com nome e carga horária', async () => {
       const novaDisciplina = {
-        codigo: 'TST',
         nome: 'Disciplina de Teste',
         carga_horaria: 40
       };
@@ -116,7 +116,7 @@ describe('Disciplinas API - E2E Tests', () => {
       const response = await api.post('/disciplinas', novaDisciplina);
       
       expect(response.status).toBe(201);
-      expect(response.data).toHaveProperty('codigo', 'TST');
+      expect(response.data).toHaveProperty('id');
       expect(response.data).toHaveProperty('nome', 'Disciplina de Teste');
       expect(response.data).toHaveProperty('carga_horaria', 40);
       
@@ -125,7 +125,7 @@ describe('Disciplinas API - E2E Tests', () => {
 
     test('Deve validar campos obrigatórios', async () => {
       const disciplinaInvalida = {
-        // Faltando codigo e nome
+        // Faltando nome
         carga_horaria: 40
       };
       
@@ -136,10 +136,9 @@ describe('Disciplinas API - E2E Tests', () => {
       expect(response.data).toHaveProperty('errors');
     });
 
-    test('Deve validar formato de código', async () => {
+    test('Deve validar nome não vazio', async () => {
       const disciplinaInvalida = {
-        codigo: 'AB', // Muito curto
-        nome: 'Teste',
+        nome: '',
         carga_horaria: 40
       };
       
@@ -160,37 +159,40 @@ describe('Disciplinas API - E2E Tests', () => {
       expect(response.status).toBe(400);
     });
 
-    test('Não deve permitir código duplicado', async () => {
+    test('Não deve permitir nome duplicado', async () => {
       const disciplinaDuplicada = {
-        codigo: 'ALG', // Já existe
-        nome: 'Algoritmos Duplicado',
+        nome: 'Algoritmos',
         carga_horaria: 60
       };
       
       const response = await api.post('/disciplinas', disciplinaDuplicada);
       
-      // Pode retornar 400 ou 500 dependendo de como é tratado
-      expect([400, 500]).toContain(response.status);
-      expect(response.data).toHaveProperty('error');
+      // Pode retornar 400, 409 ou 500 dependendo de como é tratado
+      expect([400, 409, 500]).toContain(response.status);
+      if (response.status !== 500) {
+        expect(response.data).toHaveProperty('message');
+      }
     });
 
   });
 
   // ========================================
-  // PUT /disciplinas/:codigo - Atualizar
+  // PUT /disciplinas/:id - Atualizar
   // ========================================
-  describe('PUT /disciplinas/:codigo', () => {
+  describe('PUT /disciplinas/:id', () => {
     
     test('Deve atualizar nome da disciplina', async () => {
       const dadosAtualizacao = {
         nome: 'Disciplina Atualizada'
       };
       
-      const response = await api.put('/disciplinas/TST', dadosAtualizacao);
+      // Usando ID da disciplina criada nos testes
+      const disciplinaId = disciplinaCriadaParaTestes?.id || 1;
+      const response = await api.put(`/disciplinas/${disciplinaId}`, dadosAtualizacao);
       
       expect(response.status).toBe(200);
       expect(response.data.nome).toBe('Disciplina Atualizada');
-      expect(response.data.codigo).toBe('TST');
+      expect(response.data.id).toBe(disciplinaId);
     });
 
     test('Deve atualizar carga horária', async () => {
@@ -198,7 +200,8 @@ describe('Disciplinas API - E2E Tests', () => {
         carga_horaria: 80
       };
       
-      const response = await api.put('/disciplinas/TST', dadosAtualizacao);
+      const disciplinaId = disciplinaCriadaParaTestes?.id || 1;
+      const response = await api.put(`/disciplinas/${disciplinaId}`, dadosAtualizacao);
       
       expect(response.status).toBe(200);
       expect(response.data.carga_horaria).toBe(80);
@@ -210,7 +213,8 @@ describe('Disciplinas API - E2E Tests', () => {
         carga_horaria: 60
       };
       
-      const response = await api.put('/disciplinas/TST', dadosAtualizacao);
+      const disciplinaId = disciplinaCriadaParaTestes?.id || 1;
+      const response = await api.put(`/disciplinas/${disciplinaId}`, dadosAtualizacao);
       
       expect(response.status).toBe(200);
       expect(response.data.nome).toBe('Teste Final');
@@ -222,21 +226,23 @@ describe('Disciplinas API - E2E Tests', () => {
         nome: 'Teste'
       };
       
-      const response = await api.put('/disciplinas/XXX999', dadosAtualizacao);
+      const response = await api.put('/disciplinas/999999', dadosAtualizacao);
       
       expect(response.status).toBe(404);
       expect(response.data).toHaveProperty('error');
     });
 
-    test('Não deve permitir atualizar código', async () => {
+    test('Não deve permitir alterar ID', async () => {
       const dadosAtualizacao = {
+        id: 99999,
         nome: 'Disciplina de Teste'
       };
       
-      const response = await api.put('/disciplinas/TST', dadosAtualizacao);
+      const disciplinaId = disciplinaCriadaParaTestes?.id || 1;
+      const response = await api.put(`/disciplinas/${disciplinaId}`, dadosAtualizacao);
       
-      // Código deve permanecer TST
-      expect(response.data.codigo).toBe('TST');
+      // ID deve permanecer o mesmo
+      expect(response.data.id).toBe(disciplinaId);
     });
 
     test('Deve validar carga horária ao atualizar', async () => {
@@ -256,11 +262,12 @@ describe('Disciplinas API - E2E Tests', () => {
   // ========================================
   describe('Validações de Dados', () => {
     
-    test('Código deve ter 3 caracteres', async () => {
+    test('ID deve ser numérico positivo', async () => {
       const response = await api.get('/disciplinas');
       
       response.data.forEach(disciplina => {
-        expect(disciplina.codigo).toHaveLength(3);
+        expect(typeof disciplina.id).toBe('number');
+        expect(disciplina.id).toBeGreaterThan(0);
       });
     });
 

@@ -1,7 +1,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const courseInput = document.getElementById('courseName');
-  const discCodeInput = document.getElementById('disciplineCodeInput');
   const discInput = document.getElementById('disciplineInput');
   const addBtn = document.getElementById('addBtn');
   const removeSelectedBtn = document.getElementById('removeSelectedBtn');
@@ -10,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const messageEl = document.getElementById('message');
 
   const disciplines = [];
+  let allDisciplines = []; // Armazena todas as disciplinas disponíveis
 
   // Verificar autenticação e permissão
   const usuario = API.getUsuarioLogado();
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const name = document.createElement('div');
       name.className = 'item-name';
-      name.textContent = d.codigo ? `${d.codigo} - ${d.name}` : d.name;
+      name.textContent = d.name;
 
       const removeBtn = document.createElement('button');
       removeBtn.className = 'item-remove';
@@ -70,18 +70,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function addDiscipline(codigo, name) {
-    const cleanCode = sanitize(codigo).toUpperCase();
-    const cleanName = sanitize(name);
-    if (!cleanCode) { showMessage('Informe o código da disciplina.', 'error'); return; }
-    if (!cleanName) { showMessage('Informe o nome da disciplina.', 'error'); return; }
-    const exists = disciplines.some(d => d.codigo.toLowerCase() === cleanCode.toLowerCase());
-    if (exists) { showMessage('Disciplina com este código já adicionada.', 'error'); return; }
-    disciplines.push({ codigo: cleanCode, name: cleanName, checked: false });
+  function addDiscipline(selectedId) {
+    const id = parseInt(selectedId);
+    if (!id) { showMessage('Selecione uma disciplina.', 'error'); return; }
+    
+    const exists = disciplines.some(d => d.id === id);
+    if (exists) { showMessage('Disciplina já adicionada.', 'error'); return; }
+    
+    // Buscar a disciplina completa da lista
+    const disc = allDisciplines.find(d => d.id === id);
+    if (!disc) { showMessage('Disciplina não encontrada.', 'error'); return; }
+    
+    disciplines.push({ id: disc.id, name: disc.nome, checked: false });
     render();
-    discCodeInput.value = '';
     discInput.value = '';
-    discCodeInput.focus();
+    discInput.focus();
     hideMessageAfter();
   }
 
@@ -110,6 +113,26 @@ document.addEventListener('DOMContentLoaded', () => {
     _hideTimer = setTimeout(() => hideMessage(), ms);
   }
 
+  // Carregar disciplinas disponíveis
+  async function loadDisciplines() {
+    try {
+      const result = await API.get('/disciplinas', API.authHeaders());
+      allDisciplines = result || [];
+      
+      // Preencher o select
+      discInput.innerHTML = '<option value="">Selecione uma disciplina...</option>';
+      allDisciplines.forEach(disc => {
+        const option = document.createElement('option');
+        option.value = disc.id;
+        option.textContent = disc.nome;
+        discInput.appendChild(option);
+      });
+    } catch (err) {
+      console.error('Erro ao carregar disciplinas:', err);
+      showMessage('Erro ao carregar disciplinas.', 'error');
+    }
+  }
+
   
   async function save() {
     hideMessage();
@@ -131,36 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('API global não encontrado.');
       }
 
-      // 1. Criar/atualizar disciplinas primeiro
-      const createdDiscs = [];
-      for (const d of disciplines) {
-        const discPayload = {
-          codigo: d.codigo,
-          nome: d.name,
-          carga_horaria: d.carga_horaria || 60
-        };
-
-        try {
-          // Tentar criar disciplina
-          const created = await API.post('/disciplinas', discPayload, API.authHeaders());
-          createdDiscs.push(created);
-        } catch (err) {
-          // Se já existe (409), atualizar
-          if (err?.status === 409) {
-            const updated = await API.put(`/disciplinas/${d.codigo}`, discPayload, API.authHeaders());
-            createdDiscs.push(updated);
-          } else {
-            throw err;
-          }
-        }
-      }
-
-      // 2. Criar/atualizar curso
+      // Criar/atualizar curso com disciplinas selecionadas
       const courseCode = codeFromName(courseName);
       const coursePayload = {
         codigo: courseCode,
         nome: courseName,
-        disciplinas: createdDiscs.map(cd => cd.codigo)
+        disciplinas: disciplines.map(d => d.id)
       };
 
       let courseResult = null;
@@ -176,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      showMessage('Curso e disciplinas salvos com sucesso.');
+      showMessage('Curso salvo com sucesso.');
       console.log('Curso salvo:', courseResult);
       hideMessageAfter(1200);
 
@@ -200,25 +199,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   
-  addBtn.addEventListener('click', () => addDiscipline(discCodeInput.value, discInput.value));
+  addBtn.addEventListener('click', () => addDiscipline(discInput.value));
   removeSelectedBtn.addEventListener('click', removeSelected);
   saveBtn.addEventListener('click', save);
 
   discInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addDiscipline(discCodeInput.value, discInput.value);
-    }
-  });
-
-  discCodeInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      discInput.focus();
+      addDiscipline(discInput.value);
     }
   });
 
   
   window.__UNI_DISCIPLINES = { get: () => disciplines, render };
   render();
+  
+  // Carregar disciplinas ao iniciar
+  loadDisciplines();
 });

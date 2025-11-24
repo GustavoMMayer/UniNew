@@ -7,13 +7,13 @@ const { createCursoSchema, updateCursoSchema } = require('../validators/curso.va
 // GET /api/cursos - Lista cursos
 router.get('/', cursosController.listarCursos);
 
-// GET /api/cursos/:codigo - Busca curso por código
-router.get('/:codigo', cursosController.buscarCursoPorCodigo);
+// GET /api/cursos/:id - Busca curso por ID
+router.get('/:id', cursosController.buscarCursoPorId);
 
 // POST /api/cursos - Cria curso
 router.post('/', validateBody(createCursoSchema), cursosController.criarCurso);
 
-// PUT /api/cursos/:codigo - Atualiza curso
-router.put('/:codigo', validateBody(updateCursoSchema), cursosController.atualizarCurso);
+// PUT /api/cursos/:id - Atualiza curso
+router.put('/:id', validateBody(updateCursoSchema), cursosController.atualizarCurso);
 
 module.exports = router;

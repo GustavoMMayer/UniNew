@@ -1,10 +1,6 @@
 const Joi = require('joi');
 
 const createDisciplinaSchema = Joi.object({
-  codigo: Joi.string().length(3).uppercase().pattern(/^[A-Z_]+$/).allow('').messages({
-    'string.length': 'Código deve ter exatamente 3 caracteres',
-    'string.pattern.base': 'Código deve conter apenas letras maiúsculas e underscore'
-  }),
   nome: Joi.string().required().messages({
     'string.empty': 'Nome da disciplina é obrigatório',
     'any.required': 'Nome da disciplina é obrigatório'

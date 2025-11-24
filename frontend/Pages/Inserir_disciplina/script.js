@@ -23,51 +23,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return v == null ? '' : String(v).trim();
   }
 
-  
-  function codeFromName(name) {
-    if (!name) return '';
-    const noAcc = String(name).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return noAcc.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toUpperCase();
+  // Verificar autenticação
+  const usuario = API.getUsuarioLogado();
+  if (!usuario) {
+    showMessage('Você precisa estar logado para acessar esta página.', true);
+    setTimeout(() => window.location.href = '../Login/', 2000);
+    return;
   }
 
-  
-  function ensureMockCollectionsExist(names = []) {
-    try {
-      if (typeof API === 'undefined' || typeof API.getMockDb !== 'function') return;
-      const mock = API.getMockDb();
-      if (!mock) return;
-      let changed = false;
-      names.forEach(n => {
-        if (!Array.isArray(mock[n])) {
-          mock[n] = [];
-          changed = true;
-        }
-      });
-      if (changed) {
-        localStorage.setItem('mock_db_v1', JSON.stringify(mock));
-        console.log('[disciplina] mock_db_v1 atualizado com coleções:', names);
-      }
-    } catch (e) {
-      console.warn('[disciplina] falha ao garantir coleções no mock:', e);
-    }
-  }
-
-  
-  async function upsertDisciplina(payload) {
-    const svc = (typeof API !== 'undefined') ? (API.disciplinas || API.resource('disciplinas')) : null;
-    if (!svc) throw new Error('Serviço de disciplinas (API.disciplinas) não disponível');
-
-    try {
-      return await svc.create(payload);
-    } catch (err) {
-      
-      if (err && err.status === 409) {
-        const codigo = payload.codigo;
-        return await svc.update(encodeURIComponent(codigo), payload);
-      }
-      
-      throw err;
-    }
+  const tipo = (usuario.tipo_conta || '').toLowerCase();
+  if (tipo !== 'funcionario' && tipo !== 'gerente') {
+    showMessage('Apenas funcionários e gerentes podem inserir disciplinas.', true);
+    setTimeout(() => window.history.back(), 2000);
+    return;
   }
 
   form.addEventListener('submit', async (ev) => {
@@ -94,52 +62,52 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    
-    const codigo = codeFromName(nome);
+    // Payload corrigido - sem campo codigo
     const payload = {
-      codigo: codigo,
       nome: nome,
       carga_horaria: carga
     };
 
-    
     submitBtn.disabled = true;
     submitBtn.textContent = 'Salvando...';
 
     try {
-      
-      ensureMockCollectionsExist(['disciplinas']);
+      if (typeof API === 'undefined') {
+        throw new Error('API global não encontrada. Verifique se global.js foi carregado.');
+      }
 
-      const result = await upsertDisciplina(payload);
+      // Tentar criar disciplina
+      let result;
+      try {
+        result = await API.post('/disciplinas', payload, API.authHeaders());
+      } catch (err) {
+        // Se já existe (409), buscar pelo nome e atualizar
+        if (err?.status === 409) {
+          // Buscar disciplina pelo nome
+          const disciplinas = await API.get('/disciplinas', API.authHeaders());
+          const existente = disciplinas.find(d => d.nome.toLowerCase() === nome.toLowerCase());
+          
+          if (existente) {
+            result = await API.put(`/disciplinas/${existente.id}`, payload, API.authHeaders());
+          } else {
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
 
       showMessage('Disciplina salva com sucesso.');
       console.log('Disciplina result:', result);
 
-      
       setTimeout(() => {
         try { window.history.back(); } catch (e) { window.location.href = '/'; }
       }, 1000);
 
-       
-
     } catch (err) {
       console.error('Erro ao salvar disciplina:', err);
-      const text = err?.payload?.message || err?.message || 'Erro ao salvar disciplina';
+      const text = err?.payload?.error || err?.payload?.message || err?.message || 'Erro ao salvar disciplina';
       showMessage(text, true);
-
-      
-      if (String(text).toLowerCase().includes('recurso não encontrado')) {
-        try {
-          ensureMockCollectionsExist(['disciplinas']);
-          const retry = await upsertDisciplina(payload);
-          showMessage('Disciplina salva com sucesso (após criar coleção mock).');
-          console.log('Disciplina (retry) result:', retry);
-          setTimeout(() => { try { window.history.back(); } catch (e) { window.location.href = '/'; } }, 1000);
-          return;
-        } catch (err2) {
-          console.error('Retry falhou:', err2);
-        }
-      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'SALVAR';

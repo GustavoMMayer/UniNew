@@ -1,52 +1,88 @@
-document.getElementById("deleteForm").addEventListener("submit", async function(event) {
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById("deleteForm");
+  const messageEl = document.getElementById("message");
+  const nameInput = document.getElementById("name");
+  const cpfInput = document.getElementById("cpf");
+
+  // Verificar autenticação e permissão
+  const usuario = API.getUsuarioLogado();
+  if (!usuario) {
+    setMessage('Você precisa estar logado para acessar esta página.', true);
+    setTimeout(() => window.location.href = '../Login/', 2000);
+    return;
+  }
+
+  const tipo = (usuario.tipo_conta || '').toLowerCase();
+  if (tipo !== 'funcionario' && tipo !== 'gerente') {
+    setMessage('Apenas funcionários e gerentes podem excluir usuários.', true);
+    setTimeout(() => window.history.back(), 2000);
+    return;
+  }
+
+  function setMessage(text, isError = false) {
+    messageEl.textContent = text;
+    messageEl.className = isError ? 'message error' : 'message success';
+    messageEl.style.display = 'block';
+  }
+
+  function hideMessage() {
+    messageEl.style.display = 'none';
+  }
+
+  form.addEventListener("submit", async function(event) {
     event.preventDefault();
+    hideMessage();
 
-    
-    const messageEl = document.getElementById("message");
+    const nome = nameInput.value.trim();
+    const cpf = cpfInput.value.replace(/\D/g, '').trim();
 
-    
-    const nome = document.getElementById("name").value.trim();
-    const cpf = document.getElementById("cpf").value.trim();
-
-    
+    // Validações
     if (!cpf || !nome) {
-        messageEl.textContent = "⚠️ Por favor, preencha todos os campos.";
-        messageEl.className = "message error"; 
-        return;
+      setMessage('Por favor, preencha todos os campos.', true);
+      return;
     }
 
-    const data = {
-        nome: nome,
-        cpf: parseInt(cpf)
-    };
+    if (cpf.length !== 11) {
+      setMessage('CPF deve ter 11 dígitos.', true);
+      return;
+    }
+
+    // Confirmar exclusão
+    if (!confirm(`Tem certeza que deseja excluir o usuário ${nome} (CPF: ${cpf})?`)) {
+      return;
+    }
 
     try {
-        const response = await fetch("https://sua-api.com/api/v1/docentes", {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
+      // Verificar se usuário existe
+      const usuarioExiste = await API.get(`/usuarios/${cpf}`);
+      
+      if (!usuarioExiste) {
+        setMessage('Usuário não encontrado.', true);
+        return;
+      }
 
-        const result = await response.json();
+      // Verificar se o nome confere
+      if (usuarioExiste.nome.toLowerCase() !== nome.toLowerCase()) {
+        setMessage('O nome não confere com o CPF informado.', true);
+        return;
+      }
 
-        if (!response.ok) {
-            throw new Error(`Erro ao excluir docente (HTTP ${response.status})`);
-        }
+      // Excluir usuário
+      await API.delete(`/usuarios/${cpf}`);
 
-        console.log("Docente excluído com sucesso!");
-        messageEl.textContent = "✅ Docente excluído com sucesso!";
-        messageEl.className = "message success";
+      setMessage('✅ Usuário excluído com sucesso!');
+      
+      // Limpar formulário
+      form.reset();
 
-       
-        setTimeout(() => {
-            window.location.href = "/menu_adm";
-        }, 1500);
+      setTimeout(() => {
+        window.history.back();
+      }, 1500);
 
     } catch (error) {
-        console.error("Erro:", error);
-        messageEl.textContent = "❌ Ocorreu um erro ao tentar excluir o cadastro.";
-        messageEl.className = "message error";
+      console.error('Erro ao excluir usuário:', error);
+      const msg = error?.payload?.error || error?.message || 'Erro ao excluir usuário.';
+      setMessage(msg, true);
     }
+  });
 });

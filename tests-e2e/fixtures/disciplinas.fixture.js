@@ -5,15 +5,14 @@
 
 const disciplinasFixture = {
   teste: {
-    codigo: 'TST',
     nome: 'Disciplina de Teste',
     carga_horaria: 60,
   },
 };
 
-const codigosParaLimpar = ['TST', 'TE1', 'TE2', 'TE3', 'RED'];
+const nomesParaLimpar = ['Disciplina de Teste', 'Disciplina Teste 1', 'Disciplina Teste 2', 'Disciplina Teste 3', 'Redes de Computadores'];
 
 module.exports = {
   disciplinasFixture,
-  codigosParaLimpar,
+  nomesParaLimpar,
 };

@@ -14,15 +14,14 @@ class NotasService {
   }
 
   async criarNota(dadosNota) {
-    const disciplina_codigo = dadosNota.disciplina_codigo || 
-                             this._gerarCodigoDisciplina(dadosNota.disciplina);
-    const id = dadosNota.id || `${dadosNota.cpf}_${disciplina_codigo}`;
+    const disciplina_id = dadosNota.disciplina_id;
+    const id = dadosNota.id || `${dadosNota.cpf}_${disciplina_id}`;
     
     const dadosCompletos = {
       id: id,
       cpf: dadosNota.cpf,
       disciplina: dadosNota.disciplina,
-      disciplina_codigo: disciplina_codigo,
+      disciplina_id: disciplina_id,
       nota: dadosNota.nota,
       ...(dadosNota.descricao && { descricao: dadosNota.descricao }),
       ...(dadosNota.observacao && { observacao: dadosNota.observacao })
@@ -47,10 +46,6 @@ class NotasService {
       disciplina: nota.disciplina,
       nota: nota.nota
     };
-  }
-
-  _gerarCodigoDisciplina(nome) {
-    return nome.substring(0, 3).toUpperCase();
   }
 }
 

@@ -7,27 +7,31 @@
 
 const api = require('../helpers/api.helper');
 const { usuariosFixture, cpfsParaLimpar } = require('../fixtures/usuarios.fixture');
-const { disciplinasFixture, codigosParaLimpar } = require('../fixtures/disciplinas.fixture');
+const { disciplinasFixture, nomesParaLimpar } = require('../fixtures/disciplinas.fixture');
 const db = require('../helpers/database');
 
 describe('Notas API - E2E Tests', () => {
   
   const cpfAluno = usuariosFixture.aluno.cpf;
   let notaTesteId;
+  let disciplinaTesteId;
+  let disciplinaRedId;
 
   beforeAll(async () => {
     await db.query('DELETE FROM notas WHERE cpf IN (?)', [cpfsParaLimpar]);
-    await db.query('DELETE FROM disciplinas WHERE codigo IN (?)', [codigosParaLimpar]);
+    await db.query('DELETE FROM disciplinas WHERE nome IN (?)', [nomesParaLimpar]);
     await db.query('DELETE FROM usuarios WHERE cpf IN (?)', [cpfsParaLimpar]);
     
     await api.post('/usuarios', usuariosFixture.aluno);
-    await api.post('/disciplinas', disciplinasFixture.teste);
-    await api.post('/disciplinas', { codigo: 'RED', nome: 'Redes de Computadores', carga_horaria: 60 });
+    const discResp = await api.post('/disciplinas', disciplinasFixture.teste);
+    disciplinaTesteId = discResp.data.id;
+    const redResp = await api.post('/disciplinas', { nome: 'Redes de Computadores', carga_horaria: 60 });
+    disciplinaRedId = redResp.data.id;
   });
 
   afterAll(async () => {
     await db.query('DELETE FROM notas WHERE cpf IN (?)', [cpfsParaLimpar]);
-    await db.query('DELETE FROM disciplinas WHERE codigo IN (?)', [codigosParaLimpar]);
+    await db.query('DELETE FROM disciplinas WHERE nome IN (?)', [nomesParaLimpar]);
     await db.query('DELETE FROM usuarios WHERE cpf IN (?)', [cpfsParaLimpar]);
   });
 
@@ -40,7 +44,7 @@ describe('Notas API - E2E Tests', () => {
       const novaNota = {
         cpf: cpfAluno,
         disciplina: 'Algoritmos',
-        disciplina_codigo: 'ALG',
+        disciplina_id: disciplinaTesteId,
         nota: 8.5,
         descricao: 'Prova 1'
       };
@@ -56,26 +60,26 @@ describe('Notas API - E2E Tests', () => {
       notaTesteId = response.data.id;
     });
 
-    test('ID deve ser gerado automaticamente no formato cpf_disciplina_codigo', async () => {
+    test('ID deve ser gerado automaticamente', async () => {
       const novaNota = {
         cpf: cpfAluno,
         disciplina: 'Lógica de Programação',
-        disciplina_codigo: 'LPG',
+        disciplina_id: disciplinaRedId,
         nota: 7.0
       };
       
       const response = await api.post('/notas', novaNota);
       
       expect(response.status).toBe(201);
-      expect(response.data.id).toContain(cpfAluno);
-      expect(response.data.id).toContain('LPG');
+      expect(response.data.id).toBeTruthy();
+      expect(response.data).toHaveProperty('id');
     });
 
     test('Deve aceitar nota com valor inteiro', async () => {
       const novaNota = {
         cpf: cpfAluno,
         disciplina: 'Estruturas de Dados',
-        disciplina_codigo: 'ESD',
+        disciplina_id: disciplinaTesteId,
         nota: 10
       };
       
@@ -89,7 +93,7 @@ describe('Notas API - E2E Tests', () => {
       const novaNota = {
         cpf: cpfAluno,
         disciplina: 'Banco de Dados',
-        disciplina_codigo: 'BDD',
+        disciplina_id: disciplinaTesteId,
         nota: 6.75
       };
       
@@ -103,7 +107,7 @@ describe('Notas API - E2E Tests', () => {
       const novaNota = {
         cpf: cpfAluno,
         disciplina: 'Desenvolvimento Web',
-        disciplina_codigo: 'WEB',
+        disciplina_id: disciplinaRedId,
         nota: 0
       };
       
@@ -117,7 +121,7 @@ describe('Notas API - E2E Tests', () => {
       const novaNota = {
         cpf: cpfAluno,
         disciplina: 'Redes de Computadores',
-        disciplina_codigo: 'RED',
+        disciplina_id: disciplinaRedId,
         nota: 9.0,
         descricao: 'Trabalho Final'
       };
@@ -132,7 +136,7 @@ describe('Notas API - E2E Tests', () => {
       const notaInvalida = {
         cpf: '123456789',
         disciplina: 'Teste',
-        disciplina_codigo: 'TST',
+        disciplina_id: disciplinaTesteId,
         nota: 8.0
       };
       
@@ -146,7 +150,7 @@ describe('Notas API - E2E Tests', () => {
       const notaInvalida = {
         cpf: '123456789012',
         disciplina: 'Teste',
-        disciplina_codigo: 'TST',
+        disciplina_id: disciplinaTesteId,
         nota: 8.0
       };
       
@@ -160,7 +164,7 @@ describe('Notas API - E2E Tests', () => {
       const notaInvalida = {
         cpf: '111.111.111-11',
         disciplina: 'Teste',
-        disciplina_codigo: 'TST',
+        disciplina_id: disciplinaTesteId,
         nota: 8.0
       };
       
@@ -173,7 +177,7 @@ describe('Notas API - E2E Tests', () => {
     test('Deve rejeitar nota sem disciplina', async () => {
       const notaInvalida = {
         cpf: cpfAluno,
-        disciplina_codigo: 'TST',
+        disciplina_id: disciplinaTesteId,
         nota: 8.0
       };
       
@@ -187,7 +191,7 @@ describe('Notas API - E2E Tests', () => {
       const notaInvalida = {
         cpf: cpfAluno,
         disciplina: 'Teste',
-        disciplina_codigo: 'TST'
+        disciplina_id: disciplinaTesteId
       };
       
       const response = await api.post('/notas', notaInvalida);
@@ -200,7 +204,7 @@ describe('Notas API - E2E Tests', () => {
       const notaInvalida = {
         cpf: cpfAluno,
         disciplina: 'Teste',
-        disciplina_codigo: 'TST',
+        disciplina_id: disciplinaTesteId,
         nota: -1
       };
       
@@ -214,7 +218,7 @@ describe('Notas API - E2E Tests', () => {
       const notaInvalida = {
         cpf: cpfAluno,
         disciplina: 'Teste',
-        disciplina_codigo: 'TST',
+        disciplina_id: disciplinaTesteId,
         nota: 10.5
       };
       
@@ -246,19 +250,19 @@ describe('Notas API - E2E Tests', () => {
       expect(nota).toHaveProperty('id');
       expect(nota).toHaveProperty('cpf');
       expect(nota).toHaveProperty('disciplina');
-      expect(nota).toHaveProperty('disciplina_codigo');
+      expect(nota).toHaveProperty('disciplina_id');
       expect(nota).toHaveProperty('nota');
     });
 
-    test('Deve filtrar notas por disciplina_codigo', async () => {
-      const response = await api.get('/notas?disciplina_codigo=ALG');
+    test('Deve filtrar notas por disciplina_id', async () => {
+      const response = await api.get(`/notas?disciplina_id=${disciplinaTesteId}`);
       
       expect(response.status).toBe(200);
       expect(Array.isArray(response.data)).toBe(true);
       
       if (response.data.length > 0) {
         response.data.forEach(nota => {
-          expect(nota.disciplina_codigo).toBe('ALG');
+          expect(nota.disciplina_id).toBe(disciplinaTesteId);
         });
       }
     });
@@ -365,11 +369,12 @@ describe('Notas API - E2E Tests', () => {
       expect(response.data.disciplina.length).toBeGreaterThan(0);
     });
 
-    test('Disciplina_codigo deve estar presente', async () => {
+    test('Disciplina_id deve estar presente', async () => {
       const response = await api.get(`/notas/${notaTesteId}`);
       
-      expect(response.data).toHaveProperty('disciplina_codigo');
-      expect(typeof response.data.disciplina_codigo).toBe('string');
+      expect(response.data).toHaveProperty('disciplina_id');
+      expect(typeof response.data.disciplina_id).toBe('number');
+      expect(response.data.disciplina_id).toBeGreaterThan(0);
     });
 
   });
@@ -423,14 +428,14 @@ describe('Notas API - E2E Tests', () => {
       expect(alunoResponse.data.cpf).toBe(cpf);
     });
 
-    test('Disciplina_codigo da nota deve existir na tabela de disciplinas', async () => {
+    test('Disciplina_id da nota deve existir na tabela de disciplinas', async () => {
       const notaResponse = await api.get(`/notas/${notaTesteId}`);
-      const disciplinaCodigo = notaResponse.data.disciplina_codigo;
+      const disciplinaId = notaResponse.data.disciplina_id;
       
-      const disciplinasResponse = await api.get('/disciplinas');
-      const codigosValidos = disciplinasResponse.data.map(d => d.codigo);
+      const disciplinaResponse = await api.get(`/disciplinas/${disciplinaId}`);
       
-      expect(codigosValidos).toContain(disciplinaCodigo);
+      expect(disciplinaResponse.status).toBe(200);
+      expect(disciplinaResponse.data.id).toBe(disciplinaId);
     });
 
     test('Aluno pode ter múltiplas notas', async () => {

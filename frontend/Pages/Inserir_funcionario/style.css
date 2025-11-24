@@ -1,0 +1,11 @@
+
+.message {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #D9534F; 
+    text-align: center;
+}
+
+.message.success {
+    color: #4CAF50; 
+}

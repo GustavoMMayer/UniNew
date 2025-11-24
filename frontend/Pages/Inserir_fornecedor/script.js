@@ -20,36 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function sanitize(v){ return v == null ? '' : String(v).trim(); }
   function onlyDigits(v){ return String(v || '').replace(/\D/g, ''); }
 
-  
-  function ensureMockCollectionsExist(names = []) {
-    try {
-      if (typeof API === 'undefined' || typeof API.getMockDb !== 'function') return;
-      const mock = API.getMockDb();
-      if (!mock) return;
-      let changed = false;
-      names.forEach(n => {
-        if (!Array.isArray(mock[n])) { mock[n] = []; changed = true; }
-      });
-      if (changed) localStorage.setItem('mock_db_v1', JSON.stringify(mock));
-    } catch (e) {
-      console.warn('[fornecedor] falha ao garantir coleções no mock:', e);
-    }
+  // Verificar autenticação
+  const usuario = API.getUsuarioLogado();
+  if (!usuario) {
+    showMessage('Você precisa estar logado para acessar esta página.', true);
+    setTimeout(() => window.location.href = '../Login/', 2000);
+    return;
   }
 
-  
-  async function upsertFornecedor(payload) {
-    const svc = (typeof API !== 'undefined') ? (API.fornecedores || API.resource('fornecedores')) : null;
-    if (!svc) throw new Error('Serviço de fornecedores (API.fornecedores) não disponível');
-
-    try {
-      return await svc.create(payload);
-    } catch (err) {
-      if (err && err.status === 409) {
-        const key = payload.cnpj;
-        return await svc.update(encodeURIComponent(key), payload);
-      }
-      throw err;
-    }
+  const tipo = (usuario.tipo_conta || '').toLowerCase();
+  if (tipo !== 'funcionario' && tipo !== 'gerente') {
+    showMessage('Apenas funcionários e gerentes podem inserir fornecedores.', true);
+    setTimeout(() => window.history.back(), 2000);
+    return;
   }
 
   form.addEventListener('submit', async (ev) => {
@@ -79,41 +62,36 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.textContent = 'Salvando...';
 
     try {
-      if (typeof API === 'undefined') throw new Error('API global não encontrada. Verifique se global.js foi carregado antes deste script.');
+      if (typeof API === 'undefined') {
+        throw new Error('API global não encontrada. Verifique se global.js foi carregado antes deste script.');
+      }
 
-      
-      ensureMockCollectionsExist(['fornecedores']);
-
-      const result = await upsertFornecedor(payload);
+      // Tentar criar fornecedor
+      let result;
+      try {
+        result = await API.post('/fornecedores', payload, API.authHeaders());
+      } catch (err) {
+        // Se já existe (409), atualizar
+        if (err?.status === 409) {
+          result = await API.put(`/fornecedores/${cnpj}`, payload, API.authHeaders());
+        } else {
+          throw err;
+        }
+      }
 
       showMessage('Fornecedor salvo com sucesso.');
       console.log('Fornecedor salvo:', result);
 
-      
       form.reset();
 
-      
       setTimeout(() => {
         try { window.history.back(); } catch (e) { window.location.href = '/'; }
       }, 1000);
 
     } catch (err) {
       console.error('Erro ao salvar fornecedor:', err);
-      const text = err?.payload?.message || err?.message || 'Erro ao salvar fornecedor';
+      const text = err?.payload?.error || err?.payload?.message || err?.message || 'Erro ao salvar fornecedor';
       showMessage(text, true);
-      
-      if (String(text).toLowerCase().includes('recurso não encontrado')) {
-        try {
-          ensureMockCollectionsExist(['fornecedores']);
-          const retry = await upsertFornecedor(payload);
-          showMessage('Fornecedor salvo com sucesso.');
-          console.log('Fornecedor (retry) salvo:', retry);
-          setTimeout(() => { try { window.history.back(); } catch (e) { window.location.href = '/'; } }, 1000);
-          return;
-        } catch (err2) {
-          console.error('Retry falhou:', err2);
-        }
-      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'SALVAR';

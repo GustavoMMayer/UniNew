@@ -27,17 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setMessage('Verificando login...');
 
-    // O backend aceita CPF ou email no campo username
-    const credentialsToSend = { 
-      username: login, 
-      password: senha 
-    };
-
     try {
-      
-      const resp = await API.login(credentialsToSend);
-
-      
+      const resp = await API.login({ username: login, password: senha });
       const usuario = API.getUsuarioLogado();
 
       if (!usuario) {
@@ -45,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      
       const tipo = (usuario.tipo_conta || usuario.tipoConta || usuario.tipo || '').toString().toLowerCase();
 
       if (!tipo) {
@@ -56,14 +46,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
       setMessage('Login bem-sucedido! Redirecionando...');
 
-      
       setTimeout(() => {
-        if (tipo === 'aluno') {
-          window.location.href = '/pages/menu_aluno/';
-        } else if (tipo === 'docente') {
-          window.location.href = '/pages/menu_docente/';
-        } else if (tipo === 'funcionario' || tipo === 'gerente' || tipo === 'adm' || tipo === 'administrador') {
-          window.location.href = '/pages/menu_adm/';
+        const redirectMap = {
+          'aluno': '/pages/menu_aluno/',
+          'docente': '/pages/menu_docente/',
+          'funcionario': '/pages/menu_adm/',
+          'gerente': '/pages/menu_adm/',
+          'adm': '/pages/menu_adm/',
+          'administrador': '/pages/menu_adm/'
+        };
+        
+        const redirectUrl = redirectMap[tipo];
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
         } else {
           setMessage('Tipo de conta desconhecido.', true);
           console.warn('Tipo de conta não reconhecido:', tipo, usuario);
@@ -72,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Erro no login:', err);
-      // Backend retorna { error: "msg" } ou { message: "msg" }
       const msg = err?.payload?.error || err?.payload?.message || err?.message || 'Falha ao conectar ao servidor.';
       setMessage(msg, true);
     }

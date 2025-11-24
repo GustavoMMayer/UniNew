@@ -5,15 +5,12 @@ class CursosService {
     return await cursosRepository.findAll();
   }
 
-  async buscarPorCodigo(codigo) {
-    return await cursosRepository.findByCodigo(codigo);
+  async buscarPorId(id) {
+    return await cursosRepository.findById(id);
   }
 
   async criarCurso(dadosCurso) {
-    const codigo = dadosCurso.codigo || this._gerarCodigo(dadosCurso.nome);
-    
     const dadosCompletos = {
-      codigo: codigo,
       nome: dadosCurso.nome,
       disciplinas: dadosCurso.disciplinas || []
     };
@@ -21,24 +18,20 @@ class CursosService {
     return await cursosRepository.create(dadosCompletos);
   }
 
-  async atualizarCurso(codigo, dadosAtualizacao) {
-    return await cursosRepository.update(codigo, dadosAtualizacao);
+  async atualizarCurso(id, dadosAtualizacao) {
+    return await cursosRepository.update(id, dadosAtualizacao);
   }
 
-  async excluirCurso(codigo) {
-    const curso = await cursosRepository.findByCodigo(codigo);
+  async excluirCurso(id) {
+    const curso = await cursosRepository.findById(id);
     if (!curso) return null;
     
-    await cursosRepository.delete(codigo);
+    await cursosRepository.delete(id);
     
     return {
-      codigo: curso.codigo,
+      id: curso.id,
       nome: curso.nome
     };
-  }
-
-  _gerarCodigo(nome) {
-    return nome.substring(0, 3).toUpperCase();
   }
 }
 

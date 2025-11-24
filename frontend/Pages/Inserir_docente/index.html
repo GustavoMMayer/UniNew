@@ -23,15 +23,31 @@
             <form id="docenteForm">
                 <div class="input-group">
                     <label for="cpf">CPF</label>
-                    <input type="text" id="cpf" name="cpf">
+                    <input type="text" id="cpf" name="cpf" required>
+                </div>
+                <div class="input-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" name="telefone">
                 </div>
                 <div class="input-group">
                     <label for="grau">Grau Academico</label>
-                    <input type="text" id="grau" name="grau">
+                    <select id="grau" name="grau" required>
+                        <option value="">Carregando graus acadêmicos...</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="disciplina">Disciplina</label>
-                    <input type="text" id="disciplina" name="disciplina">
+                    <select id="disciplina" name="disciplina" required>
+                        <option value="">Carregando disciplinas...</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="carga">Carga Horaria</label>

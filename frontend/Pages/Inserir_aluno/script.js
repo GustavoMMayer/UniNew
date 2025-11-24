@@ -7,10 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const nomeInput = document.getElementById('nome');
   const emailInput = document.getElementById('email');
   const telefoneInput = document.getElementById('telefone');
-  const senhaInput = document.getElementById('senha');
   const cursoInput = document.getElementById('curso');
   const situacaoInput = document.getElementById('situacao');
   const messageEl = document.getElementById('message');
+
+  let allCursos = [];
 
   function setMessage(txt, isError = false) {
     if (!messageEl) return;
@@ -34,6 +35,25 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  // Carregar cursos da API
+  async function loadCursos() {
+    try {
+      const cursos = await API.get('/cursos', null, API.authHeaders());
+      allCursos = cursos || [];
+      
+      cursoInput.innerHTML = '<option value="">Selecione um curso...</option>';
+      allCursos.forEach(curso => {
+        const option = document.createElement('option');
+        option.value = curso.nome;
+        option.textContent = curso.nome;
+        cursoInput.appendChild(option);
+      });
+    } catch (err) {
+      console.error('Erro ao carregar cursos:', err);
+      cursoInput.innerHTML = '<option value="">Erro ao carregar cursos</option>';
+    }
+  }
+
   // Buscar dados ao sair do campo CPF
   cpfInput.addEventListener('blur', async () => {
     const cpf = cpfInput.value.replace(/\D/g, '').trim();
@@ -49,15 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
         telefoneInput.value = user.telefone || '';
         cursoInput.value = user.curso || '';
         situacaoInput.value = user.situacao || '';
-        senhaInput.disabled = true;
-        senhaInput.placeholder = 'Não é necessário para atualização';
         setMessage('Usuário encontrado. Edite os campos e clique em SALVAR para atualizar.');
       }
     } catch (err) {
       if (err?.status === 404) {
         setMessage('CPF não encontrado. Preencha todos os campos para criar novo aluno.');
-        senhaInput.disabled = false;
-        senhaInput.placeholder = 'Obrigatório para novo aluno (mín. 6 caracteres)';
       } else {
         console.error(err);
         setMessage('Erro ao verificar CPF.', true);
@@ -73,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const nome = nomeInput.value.trim();
     const email = emailInput.value.trim();
     const telefone = telefoneInput.value.trim();
-    const senha = senhaInput.value;
     const curso = cursoInput.value;
     const situacao = situacaoInput.value;
 
@@ -123,19 +138,13 @@ document.addEventListener('DOMContentLoaded', () => {
         result = await API.put(`/usuarios/${cpf}`, payload, API.authHeaders());
         setMessage('Aluno atualizado com sucesso!');
       } else {
-        // Criar: POST /api/usuarios
-        if (!senha || senha.length < 6) {
-          setMessage('Senha é obrigatória para novo aluno (mínimo 6 caracteres).', true);
-          senhaInput.focus();
-          return;
-        }
-
+        // Criar: POST /api/usuarios com senha padrão
         const payload = {
           cpf,
           nome,
           email,
           telefone,
-          senha,
+          senha: 'senha123',
           tipo_conta: 'aluno',
           curso,
           situacao
@@ -158,4 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setMessage(`Erro: ${text}`, true);
     }
   });
+
+  // Carregar cursos ao iniciar
+  loadCursos();
 });

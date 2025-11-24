@@ -309,4 +309,22 @@ const MODO_TESTE = false;
   API.notas = API.resource('notas');
 
   window.API = API;
+
+  // Utility Functions
+  window.normalizeTipoFromUser = function(u) {
+    if (!u) return '';
+    const cands = [u.tipo_conta, u.tipoConta, u.tipo, u.role, u.role_name];
+    for (const c of cands) {
+      if (!c && c !== 0) continue;
+      const s = String(c).trim().toLowerCase();
+      if (s) return s;
+    }
+    return '';
+  };
+
+  window.isEditorFromUser = function(u) {
+    const t = window.normalizeTipoFromUser(u);
+    const ok = ['funcionario','funcionário','gerente','adm','administrador','admin','staff','func'];
+    return ok.includes(t);
+  };
 })(window);

@@ -23,11 +23,15 @@
             <form id="notaForm">
                 <div class="input-group">
                     <label for="matricula">CPF do Aluno</label>
-                    <input type="text" id="matricula" name="matricula" placeholder="Apenas números (11 dígitos)">
+                    <select id="matricula" name="matricula" required>
+                        <option value="">Selecione um aluno...</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="disciplina">Disciplina</label>
-                    <input type="text" id="disciplina" name="disciplina">
+                    <select id="disciplina" name="disciplina" required>
+                        <option value="">Carregando disciplinas...</option>
+                    </select>
                 </div>
                 
                 <div class="input-group">

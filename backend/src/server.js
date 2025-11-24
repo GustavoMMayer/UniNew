@@ -12,6 +12,7 @@ const fornecedoresRoutes = require('./routes/fornecedores.routes');
 const cursosRoutes = require('./routes/cursos.routes');
 const disciplinasRoutes = require('./routes/disciplinas.routes');
 const notasRoutes = require('./routes/notas.routes');
+const grausAcademicosRoutes = require('./routes/graus-academicos.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ app.use('/api/fornecedores', fornecedoresRoutes);
 app.use('/api/cursos', cursosRoutes);
 app.use('/api/disciplinas', disciplinasRoutes);
 app.use('/api/notas', notasRoutes);
+app.use('/api/graus-academicos', grausAcademicosRoutes);
 
 app.get('/api', (req, res) => {
   res.json({
@@ -43,7 +45,8 @@ app.get('/api', (req, res) => {
       '/api/fornecedores',
       '/api/cursos',
       '/api/disciplinas',
-      '/api/notas'
+      '/api/notas',
+      '/api/graus-academicos'
     ]
   });
 });
