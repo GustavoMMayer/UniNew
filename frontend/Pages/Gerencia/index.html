@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniNew - Inserir Docente</title>
+    <link rel="stylesheet" href="/Assets/Styles/global.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div class="container">
+        <header class="app-header">
+            <h1 class="logo-text">UniNew</h1>
+            <div class="logo-image">
+                <img src="/Assets/Images/Logo.png" alt="Logo UniNew">
+                <div id="circle-dark"></div>
+                <div id="circle-light"></div>
+            </div>
+        </header>
+
+        <main class="form-container">
+            <form id="gerenciaForm">
+                <div class="input-group">
+                    <label for="pessoas">Pessoas (Usuários)</label>
+                    <select id="pessoas" name="pessoas">
+                        <option value="">Selecione uma pessoa...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="docentes">Docentes</label>
+                    <select id="docentes" name="docentes">
+                        <option value="">Selecione um docente...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="fornecedores">Fornecedores</label>
+                    <select id="fornecedores" name="fornecedores">
+                        <option value="">Selecione um fornecedor...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="funcionarios">Funcionários</label>
+                    <select id="funcionarios" name="funcionarios">
+                        <option value="">Selecione um funcionário...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="alunos">Alunos</label>
+                    <select id="alunos" name="alunos">
+                        <option value="">Selecione um aluno...</option>
+                    </select>
+                </div>
+                
+
+                <button type="submit" class="btn btn-red">EXCLUIR SELECIONADOS</button>
+            </form>
+            
+            <p id="message" class="message"></p>
+        </main>
+    </div>
+
+    <footer class="footer-wave">
+        <h2>GERÊNCIA</h2>
+    </footer>
+
+    <script src="/Assets/Js/global.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1214 @@
+{
+	"info": {
+		"_postman_id": "uninew-api-collection",
+		"name": "UniNew API",
+		"description": "Sistema de gerenciamento acadêmico - Backend API\n\nBase URL: http://localhost:3000/api\n\nAutenticação: JWT Bearer Token (exceto /auth/login)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login com CPF",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('auth_token', response.token);",
+									"    pm.environment.set('user_cpf', response.usuario.cpf);",
+									"    pm.environment.set('user_tipo_conta', response.usuario.tipo_conta);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"11111111111\",\n  \"password\": \"senha123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Autentica um usuário usando CPF. Salva o token automaticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Login com Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('auth_token', response.token);",
+									"    pm.environment.set('user_cpf', response.usuario.cpf);",
+									"    pm.environment.set('user_tipo_conta', response.usuario.tipo_conta);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"aluno@teste.com\",\n  \"password\": \"senha123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Autentica um usuário usando email. Salva o token automaticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Invalida o token do usuário (logout)."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de autenticação"
+		},
+		{
+			"name": "Usuários",
+			"item": [
+				{
+					"name": "Listar Todos os Usuários",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Lista todos os usuários do sistema."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Usuários com Filtros",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios?tipo_conta=aluno&curso=ADS&situacao=Ativo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios"
+							],
+							"query": [
+								{
+									"key": "tipo_conta",
+									"value": "aluno",
+									"description": "Filtrar por tipo: aluno, docente, funcionario, gerente"
+								},
+								{
+									"key": "curso",
+									"value": "ADS",
+									"description": "Filtrar por curso"
+								},
+								{
+									"key": "situacao",
+									"value": "Ativo",
+									"description": "Filtrar por situação: Ativo, Inativo"
+								}
+							]
+						},
+						"description": "Lista usuários com filtros opcionais."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Usuário por CPF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios/11111111111",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios",
+								"11111111111"
+							]
+						},
+						"description": "Busca um usuário específico por CPF."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Usuário por Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios/email/aluno@teste.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios",
+								"email",
+								"aluno@teste.com"
+							]
+						},
+						"description": "Busca um usuário específico por email."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Usuário Aluno",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpf\": \"12345678901\",\n  \"nome\": \"João Silva\",\n  \"email\": \"joao.silva@teste.com\",\n  \"telefone\": \"11999999999\",\n  \"senha\": \"senha123\",\n  \"tipo_conta\": \"aluno\",\n  \"curso\": \"ADS\",\n  \"situacao\": \"Ativo\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Cria um novo usuário do tipo aluno."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Usuário Docente",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpf\": \"98765432109\",\n  \"nome\": \"Maria Santos\",\n  \"email\": \"maria.santos@teste.com\",\n  \"telefone\": \"11988888888\",\n  \"senha\": \"senha123\",\n  \"tipo_conta\": \"docente\",\n  \"grau_academico\": \"Mestrado\",\n  \"disciplina\": \"Banco de Dados\",\n  \"carga_horaria\": 40\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Cria um novo usuário do tipo docente."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Usuário",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"João Silva Atualizado\",\n  \"email\": \"joao.novo@teste.com\",\n  \"telefone\": \"11977777777\",\n  \"curso\": \"Marketing\",\n  \"situacao\": \"Ativo\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/usuarios/12345678901",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios",
+								"12345678901"
+							]
+						},
+						"description": "Atualiza dados de um usuário existente."
+					},
+					"response": []
+				},
+				{
+					"name": "Deletar Usuário",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios/12345678901",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios",
+								"12345678901"
+							]
+						},
+						"description": "Exclui um usuário do sistema."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de gerenciamento de usuários"
+		},
+		{
+			"name": "Alunos",
+			"item": [
+				{
+					"name": "Listar Todos os Alunos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/alunos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"alunos"
+							]
+						},
+						"description": "Lista todos os alunos."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Alunos por Curso",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/alunos?curso=ADS",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"alunos"
+							],
+							"query": [
+								{
+									"key": "curso",
+									"value": "ADS",
+									"description": "Opções: ADS, Marketing, Administração"
+								}
+							]
+						},
+						"description": "Lista alunos filtrados por curso."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Alunos por Situação",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/alunos?situacao=Ativo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"alunos"
+							],
+							"query": [
+								{
+									"key": "situacao",
+									"value": "Ativo",
+									"description": "Opções: Ativo, Inativo"
+								}
+							]
+						},
+						"description": "Lista alunos filtrados por situação."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Aluno por CPF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/alunos/11111111111",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"alunos",
+								"11111111111"
+							]
+						},
+						"description": "Busca um aluno específico por CPF."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Aluno",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"curso\": \"Marketing\",\n  \"situacao\": \"Ativo\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/alunos/11111111111",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"alunos",
+								"11111111111"
+							]
+						},
+						"description": "Atualiza informações de um aluno."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de gerenciamento de alunos"
+		},
+		{
+			"name": "Docentes",
+			"item": [
+				{
+					"name": "Listar Todos os Docentes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/docentes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"docentes"
+							]
+						},
+						"description": "Lista todos os docentes."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Docente por CPF",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/docentes/22222222222",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"docentes",
+								"22222222222"
+							]
+						},
+						"description": "Busca um docente específico por CPF."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Docente",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"grau_academico\": \"Doutorado\",\n  \"disciplina\": \"Estrutura de Dados\",\n  \"carga_horaria\": 60\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/docentes/22222222222",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"docentes",
+								"22222222222"
+							]
+						},
+						"description": "Atualiza informações de um docente."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de gerenciamento de docentes"
+		},
+		{
+			"name": "Fornecedores",
+			"item": [
+				{
+					"name": "Listar Todos os Fornecedores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fornecedores",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"fornecedores"
+							]
+						},
+						"description": "Lista todos os fornecedores."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Fornecedor por CNPJ",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fornecedores/12345678000199",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"fornecedores",
+								"12345678000199"
+							]
+						},
+						"description": "Busca um fornecedor específico por CNPJ."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Fornecedor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cnpj\": \"98765432000188\",\n  \"razao_social\": \"Empresa Teste LTDA\",\n  \"contatos\": [\n    \"contato@empresa.com\",\n    \"11999999999\"\n  ],\n  \"servicos\": [\n    \"Limpeza\",\n    \"Segurança\",\n    \"Manutenção\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/fornecedores",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"fornecedores"
+							]
+						},
+						"description": "Cria um novo fornecedor."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Fornecedor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"razao_social\": \"Empresa Atualizada LTDA\",\n  \"contatos\": [\n    \"novo@empresa.com\"\n  ],\n  \"servicos\": [\n    \"Limpeza\",\n    \"Jardinagem\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/fornecedores/98765432000188",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"fornecedores",
+								"98765432000188"
+							]
+						},
+						"description": "Atualiza informações de um fornecedor."
+					},
+					"response": []
+				},
+				{
+					"name": "Deletar Fornecedor",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/fornecedores/98765432000188",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"fornecedores",
+								"98765432000188"
+							]
+						},
+						"description": "Exclui um fornecedor do sistema."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de gerenciamento de fornecedores"
+		},
+		{
+			"name": "Cursos",
+			"item": [
+				{
+					"name": "Listar Todos os Cursos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/cursos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cursos"
+							]
+						},
+						"description": "Lista todos os cursos."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Curso por Código",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/cursos/ADS",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cursos",
+								"ADS"
+							]
+						},
+						"description": "Busca um curso específico por código."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Curso",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"codigo\": \"ENG\",\n  \"nome\": \"Engenharia de Software\",\n  \"disciplinas\": [\n    \"ALG\",\n    \"LP\",\n    \"BD\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cursos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cursos"
+							]
+						},
+						"description": "Cria um novo curso."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Curso (sem código)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Gestão de Recursos Humanos\",\n  \"disciplinas\": []\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cursos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cursos"
+							]
+						},
+						"description": "Cria um novo curso (código gerado automaticamente)."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Curso",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Engenharia de Software - Noturno\",\n  \"disciplinas\": [\n    \"ALG\",\n    \"LP\",\n    \"BD\",\n    \"ES\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cursos/ENG",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cursos",
+								"ENG"
+							]
+						},
+						"description": "Atualiza informações de um curso."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de gerenciamento de cursos"
+		},
+		{
+			"name": "Disciplinas",
+			"item": [
+				{
+					"name": "Listar Todas as Disciplinas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/disciplinas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"disciplinas"
+							]
+						},
+						"description": "Lista todas as disciplinas."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Disciplina por Código",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/disciplinas/ALG",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"disciplinas",
+								"ALG"
+							]
+						},
+						"description": "Busca uma disciplina específica por código."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Disciplina",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"codigo\": \"BD\",\n  \"nome\": \"Banco de Dados\",\n  \"carga_horaria\": 80\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/disciplinas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"disciplinas"
+							]
+						},
+						"description": "Cria uma nova disciplina."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Disciplina (sem código)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Estrutura de Dados\",\n  \"carga_horaria\": 60\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/disciplinas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"disciplinas"
+							]
+						},
+						"description": "Cria uma nova disciplina (código gerado automaticamente)."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Disciplina",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Banco de Dados Relacionais\",\n  \"carga_horaria\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/disciplinas/BD",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"disciplinas",
+								"BD"
+							]
+						},
+						"description": "Atualiza informações de uma disciplina."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de gerenciamento de disciplinas"
+		},
+		{
+			"name": "Notas",
+			"item": [
+				{
+					"name": "Listar Todas as Notas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/notas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"notas"
+							]
+						},
+						"description": "Lista todas as notas."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Notas por Disciplina",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/notas?disciplina_codigo=ALG",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"notas"
+							],
+							"query": [
+								{
+									"key": "disciplina_codigo",
+									"value": "ALG",
+									"description": "Código da disciplina"
+								}
+							]
+						},
+						"description": "Lista notas filtradas por disciplina."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Notas de um Aluno",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/notas/aluno/11111111111",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"notas",
+								"aluno",
+								"11111111111"
+							]
+						},
+						"description": "Lista todas as notas de um aluno específico."
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar Nota por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/notas/11111111111_ALG",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"notas",
+								"11111111111_ALG"
+							]
+						},
+						"description": "Busca uma nota específica por ID (formato: CPF_CODIGO_DISCIPLINA)."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Nota",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpf\": \"11111111111\",\n  \"disciplina\": \"Banco de Dados\",\n  \"disciplina_codigo\": \"BD\",\n  \"nota\": 9.5,\n  \"descricao\": \"Avaliação final\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/notas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"notas"
+							]
+						},
+						"description": "Cria um novo lançamento de nota."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Nota (auto-gerado)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpf\": \"11111111111\",\n  \"disciplina\": \"Algoritmos\",\n  \"nota\": 8.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/notas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"notas"
+							]
+						},
+						"description": "Cria nota com ID e código gerados automaticamente."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints de gerenciamento de notas"
+		},
+		{
+			"name": "Testes de Validação",
+			"item": [
+				{
+					"name": "Login - Senha Curta (ERRO)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"11111111111\",\n  \"password\": \"123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Teste de validação: senha com menos de 6 caracteres."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Usuário - CPF Inválido (ERRO)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpf\": \"123\",\n  \"nome\": \"Teste\",\n  \"email\": \"teste@teste.com\",\n  \"senha\": \"senha123\",\n  \"tipo_conta\": \"aluno\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						},
+						"description": "Teste de validação: CPF com menos de 11 dígitos."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Nota - Nota Inválida (ERRO)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cpf\": \"11111111111\",\n  \"disciplina\": \"Algoritmos\",\n  \"nota\": 15.5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/notas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"notas"
+							]
+						},
+						"description": "Teste de validação: nota maior que 10."
+					},
+					"response": []
+				},
+				{
+					"name": "Filtrar Alunos - Curso Inválido (ERRO)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/alunos?curso=InvalidCourse",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"alunos"
+							],
+							"query": [
+								{
+									"key": "curso",
+									"value": "InvalidCourse"
+								}
+							]
+						},
+						"description": "Teste de validação: curso inválido no filtro."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Fornecedor - CNPJ Inválido (ERRO)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cnpj\": \"123\",\n  \"razao_social\": \"Empresa Teste\",\n  \"contatos\": [\"contato@teste.com\"],\n  \"servicos\": [\"Limpeza\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/fornecedores",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"fornecedores"
+							]
+						},
+						"description": "Teste de validação: CNPJ com menos de 14 dígitos."
+					},
+					"response": []
+				}
+			],
+			"description": "Testes de validação Joi (espera-se erro 400)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_cpf",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_tipo_conta",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
