@@ -1,6 +1,7 @@
 const Joi = require('joi');
 
 const createCursoSchema = Joi.object({
+  codigo: Joi.string().optional().allow('', null),
   nome: Joi.string().required().messages({
     'string.empty': 'Nome do curso é obrigatório',
     'any.required': 'Nome do curso é obrigatório'
