@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     podeEditar = novo;
     if (podeEditar) {
       setFormEditable(true);
-      setMessage('Preencha os dados do docente. Se o CPF já existir, será atualizado; caso contrário, será criado um novo usuário.');
+      setMessage('');
     } else {
       setFormEditable(false);
       if (!usuario) setMessage('Faça login como funcionário ou gerente para editar.', true);
@@ -104,29 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   
-  cpfInput && cpfInput.addEventListener('blur', async () => {
-    const cpf = (cpfInput.value || '').replace(/\D/g, '').trim();
-    if (!cpf) return;
-    try {
-      const usuariosSvc = API.usuarios || API.resource('usuarios');
-      const user = await usuariosSvc.getById(encodeURIComponent(cpf));
-      if (user) {
-        if (user.nome && nomeInput) nomeInput.value = user.nome;
-        if (user.email && emailInput) emailInput.value = user.email;
-        if (user.telefone && telefoneInput) telefoneInput.value = user.telefone;
-        if (user.grau_academico && grauSelect) grauSelect.value = user.grau_academico;
-        if (user.disciplina && disciplinaSelect) disciplinaSelect.value = user.disciplina;
-        if (user.carga_horaria && cargaInput) cargaInput.value = user.carga_horaria;
-        setMessage('Dados do usuário carregados (registro existente).');
-      }
-    } catch (err) {
-      if (err && err.status === 404) {
-        
-      } else {
-        console.error(err);
-      }
-    }
-  });
+  // Removido: não carregar dados existentes ao sair do CPF
 
   
   form.addEventListener('submit', async (ev) => {
@@ -152,100 +130,44 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!validarCarga(carga)) { setMessage('Carga horária inválida (deve ser número > 0).', true); cargaInput.focus(); return; }
 
     try {
-      setMessage('Verificando existência do usuário...');
-      const usuariosSvc = API.usuarios || API.resource('usuarios');
+      setMessage('Criando docente...');
       const docentesSvc = API.docentes || API.resource('docentes');
 
-      let usuarioExistente = null;
-      let isUpdate = false;
-      
-      try {
-        usuarioExistente = await usuariosSvc.getById(encodeURIComponent(cpfRaw));
-        isUpdate = true;
-      } catch (err) {
-        const is404 = err && (err.status === 404 || (err.payload && String(err.payload.message||'').toLowerCase().includes('não encontrado')));
-        if (!is404) throw err;
-      }
+      const payload = {
+        cpf: cpfRaw,
+        nome: nome,
+        email: email,
+        telefone: telefone,
+        tipo_conta: 'docente',
+        senha: 'senha123',
+        grau_academico: grau,
+        disciplina: disciplina,
+        carga_horaria: Number(carga)
+      };
 
-      let usuarioResult;
-      
-      if (isUpdate) {
-        // Atualizar usuário existente
-        const payloadUsuario = {
-          nome: nome,
-          email: email,
-          telefone: telefone,
-          tipo_conta: 'docente',
-          grau_academico: grau,
-          disciplina: disciplina,
-          carga_horaria: Number(carga)
-        };
-        setMessage('Atualizando usuário...');
-        usuarioResult = await usuariosSvc.update(encodeURIComponent(cpfRaw), payloadUsuario);
-      } else {
-        // Criar novo usuário
-        const payloadUsuario = {
-          cpf: cpfRaw,
-          nome: nome,
-          email: email,
-          telefone: telefone,
-          tipo_conta: 'docente',
-          senha: 'senha123',
-          grau_academico: grau,
-          disciplina: disciplina,
-          carga_horaria: Number(carga)
-        };
-        setMessage('Criando novo docente...');
-        usuarioResult = await usuariosSvc.create(payloadUsuario);
-      }
+      const result = await docentesSvc.create(payload);
 
-      
-      try {
-        let docenteExistente = null;
-        try {
-          docenteExistente = await docentesSvc.getById(encodeURIComponent(cpfRaw));
-        } catch (errD) {
-          const is404d = errD && (errD.status === 404 || (errD.payload && String(errD.payload.message||'').toLowerCase().includes('não encontrado')));
-          if (is404d) docenteExistente = null;
-          else throw errD;
-        }
-
-        if (docenteExistente) {
-          const payloadDocente = Object.assign({}, docenteExistente, {
-            cpf: cpfRaw,
-            grau_academico: grau,
-            disciplina: disciplina,
-            carga_horaria: Number(carga)
-          });
-          await docentesSvc.update(encodeURIComponent(cpfRaw), payloadDocente);
-        } else {
-          
-          console.warn('Registro em "docentes" não encontrado para este CPF — não será criado (apenas PUT).');
-        }
-      } catch (errDocUpd) {
-        console.warn('Erro ao atualizar coleção docentes (PUT):', errDocUpd);
-      }
-
-      
-      const usuarioLogado = API.getUsuarioLogado();
-      if (usuarioLogado && (usuarioLogado.cpf === cpfRaw || usuarioLogado.cnpj === cpfRaw)) {
-        const merged = Object.assign({}, usuarioLogado, usuarioResult);
-        API.setUsuarioLogado(merged);
-      }
-
-      
-      const successMsg = isUpdate ? 'Docente atualizado com sucesso!' : 'Docente criado com sucesso!';
-      setMessage(successMsg, false);
-      console.log(isUpdate ? 'Docente atualizado:' : 'Docente criado:', usuarioResult);
+      setMessage('Docente criado com sucesso!', false);
+      console.log('Docente criado:', result);
       
       setTimeout(() => {
-        form.reset();
-        setMessage('');
-      }, 2000);
+        const usuarioLogado = API.getUsuarioLogado();
+        const tipo = usuarioLogado?.tipo_conta || '';
+        
+        if (tipo === 'gerente' || tipo === 'funcionario') {
+          window.location.href = '/Pages/menu_adm/';
+        } else if (tipo === 'docente') {
+          window.location.href = '/Pages/menu_docente/';
+        } else if (tipo === 'aluno') {
+          window.location.href = '/Pages/menu_aluno/';
+        } else {
+          window.location.href = '/';
+        }
+      }, 1500);
 
     } catch (err) {
-      console.error('Erro ao atualizar docente:', err);
-      const text = err?.payload?.message || err?.message || 'Erro ao salvar';
+      console.error('Erro ao criar docente:', err);
+      const text = err?.payload?.message || err?.message || 'Erro ao criar docente';
       setMessage(`Erro: ${text}`, true);
     }
   });

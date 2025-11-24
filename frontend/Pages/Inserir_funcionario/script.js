@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     podeEditar = novo;
     if (podeEditar) {
       setFormEditable(true);
-      setMessage('Preencha os dados do funcionário. Se o CPF já existir, será atualizado; caso contrário, será criado um novo usuário.');
+      setMessage('');
     } else {
       setFormEditable(false);
       if (!usuario) setMessage('Faça login como funcionário ou gerente para editar.', true);
@@ -54,26 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   
-  cpfInput && cpfInput.addEventListener('blur', async () => {
-    const cpf = (cpfInput.value || '').replace(/\D/g, '').trim();
-    if (!cpf) return;
-    try {
-      const usuariosSvc = API.usuarios || API.resource('usuarios');
-      const user = await usuariosSvc.getById(encodeURIComponent(cpf));
-      if (user) {
-        if (user.nome && nomeInput) nomeInput.value = user.nome;
-        if (user.email && emailInput) emailInput.value = user.email;
-        if (user.telefone && telefoneInput) telefoneInput.value = user.telefone;
-        setMessage('Dados do usuário carregados (registro existente).');
-      }
-    } catch (err) {
-      if (err && err.status === 404) {
-        
-      } else {
-        console.error(err);
-      }
-    }
-  });
+  // Removido: não carregar dados existentes ao sair do CPF
 
   
   form.addEventListener('submit', async (ev) => {
@@ -93,66 +74,41 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!email) { setMessage('Email é obrigatório.', true); emailInput.focus(); return; }
 
     try {
-      setMessage('Verificando existência do usuário...');
+      setMessage('Criando funcionário...');
       const usuariosSvc = API.usuarios || API.resource('usuarios');
 
-      let usuarioExistente = null;
-      let isUpdate = false;
-      
-      try {
-        usuarioExistente = await usuariosSvc.getById(encodeURIComponent(cpfRaw));
-        isUpdate = true;
-      } catch (err) {
-        const is404 = err && (err.status === 404 || (err.payload && String(err.payload.message||'').toLowerCase().includes('não encontrado')));
-        if (!is404) throw err;
-      }
+      const payload = {
+        cpf: cpfRaw,
+        nome: nome,
+        email: email,
+        telefone: telefone,
+        tipo_conta: 'funcionario',
+        senha: 'senha123'
+      };
 
-      let usuarioResult;
-      
-      if (isUpdate) {
-        // Atualizar usuário existente
-        const payloadUsuario = {
-          nome: nome,
-          email: email,
-          telefone: telefone,
-          tipo_conta: 'funcionario'
-        };
-        setMessage('Atualizando usuário...');
-        usuarioResult = await usuariosSvc.update(encodeURIComponent(cpfRaw), payloadUsuario);
-      } else {
-        // Criar novo usuário
-        const payloadUsuario = {
-          cpf: cpfRaw,
-          nome: nome,
-          email: email,
-          telefone: telefone,
-          tipo_conta: 'funcionario',
-          senha: 'senha123'
-        };
-        setMessage('Criando novo funcionário...');
-        usuarioResult = await usuariosSvc.create(payloadUsuario);
-      }
+      const result = await usuariosSvc.create(payload);
 
-      
-      const usuarioLogado = API.getUsuarioLogado();
-      if (usuarioLogado && (usuarioLogado.cpf === cpfRaw || usuarioLogado.cnpj === cpfRaw)) {
-        const merged = Object.assign({}, usuarioLogado, usuarioResult);
-        API.setUsuarioLogado(merged);
-      }
-
-      
-      const successMsg = isUpdate ? 'Funcionário atualizado com sucesso!' : 'Funcionário criado com sucesso!';
-      setMessage(successMsg, false);
-      console.log(isUpdate ? 'Funcionário atualizado:' : 'Funcionário criado:', usuarioResult);
+      setMessage('Funcionário criado com sucesso!', false);
+      console.log('Funcionário criado:', result);
       
       setTimeout(() => {
-        form.reset();
-        setMessage('');
-      }, 2000);
+        const usuarioLogado = API.getUsuarioLogado();
+        const tipo = usuarioLogado?.tipo_conta || '';
+        
+        if (tipo === 'gerente' || tipo === 'funcionario') {
+          window.location.href = '/Pages/menu_adm/';
+        } else if (tipo === 'docente') {
+          window.location.href = '/Pages/menu_docente/';
+        } else if (tipo === 'aluno') {
+          window.location.href = '/Pages/menu_aluno/';
+        } else {
+          window.location.href = '/';
+        }
+      }, 1500);
 
     } catch (err) {
-      console.error('Erro ao salvar funcionário:', err);
-      const text = err?.payload?.message || err?.message || 'Erro ao salvar';
+      console.error('Erro ao criar funcionário:', err);
+      const text = err?.payload?.message || err?.message || 'Erro ao criar funcionário';
       setMessage(`Erro: ${text}`, true);
     }
   });

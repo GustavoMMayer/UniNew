@@ -1,5 +1,30 @@
 const Joi = require('joi');
 
+const createDocenteSchema = Joi.object({
+  cpf: Joi.string().length(11).pattern(/^\d+$/).required().messages({
+    'string.length': 'CPF deve ter 11 dígitos',
+    'string.pattern.base': 'CPF deve conter apenas números',
+    'any.required': 'CPF é obrigatório'
+  }),
+  nome: Joi.string().required().messages({
+    'string.empty': 'Nome é obrigatório',
+    'any.required': 'Nome é obrigatório'
+  }),
+  email: Joi.string().email().required().messages({
+    'string.email': 'Email inválido',
+    'any.required': 'Email é obrigatório'
+  }),
+  telefone: Joi.string().allow('', null),
+  senha: Joi.string().min(6).required().messages({
+    'string.min': 'Senha deve ter no mínimo 6 caracteres',
+    'any.required': 'Senha é obrigatória'
+  }),
+  tipo_conta: Joi.string().valid('docente').optional().default('docente'),
+  grau_academico: Joi.string().allow('', null),
+  disciplina: Joi.string().allow('', null),
+  carga_horaria: Joi.number().integer().min(0).max(168).allow(null)
+});
+
 const updateDocenteSchema = Joi.object({
   nome: Joi.string(),
   email: Joi.string().email(),
@@ -14,5 +39,7 @@ const updateDocenteSchema = Joi.object({
 });
 
 module.exports = {
+  createDocenteSchema,
   updateDocenteSchema
 };
+

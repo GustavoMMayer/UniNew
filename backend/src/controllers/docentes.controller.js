@@ -1,4 +1,17 @@
 const docentesService = require('../services/docentes.service');
+const usuariosService = require('../services/usuarios.service');
+
+const criarDocente = async (req, res) => {
+  try {
+    // Garantir que tipo_conta seja 'docente'
+    const dadosDocente = { ...req.body, tipo_conta: 'docente' };
+    const docente = await usuariosService.criarUsuario(dadosDocente);
+    res.status(201).json(docente);
+  } catch (error) {
+    console.error('Erro ao criar docente:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
 const listarDocentes = async (req, res) => {
   try {
@@ -37,6 +50,7 @@ const atualizarDocente = async (req, res) => {
 };
 
 module.exports = {
+  criarDocente,
   listarDocentes,
   buscarDocentePorCpf,
   atualizarDocente
