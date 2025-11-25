@@ -47,7 +47,7 @@ Optamos por utilizar tecnologias simples e diretas para garantir portabilidade e
 ---
 
 ## 🎥 Vídeo Explicativo
-🔗 [Clique aqui para assistir ao vídeo de apresentação](INSIRA_O_LINK_AQUI)
+🔗 [Clique aqui para assistir ao vídeo de apresentação](https://www.youtube.com/watch?v=4Fg6gKxIHHI)
 
 ---
 
